@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Child Registration &amp; Records · Pediatric Clinic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --primary:#6C63FF;
+    --secondary:#4F8EF7;
+    --accent:#A78BFA;
+    --bg:#F3F1FC;
+    --card:#FFFFFF;
+    --success:#14B8A6;
+    --warning:#FBBF24;
+    --danger:#FF6F91;
+    --text:#241E3D;
+    --muted:#8B85A6;
+    --border:#ECE8F9;
+    --hover:#F1EDFC;
+    --header-from:#FFFFFF;
+    --header-to:#FFFFFF;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    font-family:'Inter', sans-serif;
+    background:linear-gradient(135deg, #E9FBF2 0%, #EEF6F9 25%, #F1EDFC 60%, #FBEFF6 100%);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  .dashboard{ display:flex; width:100%; min-height:100vh; }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{
+    width:72px; flex-shrink:0;
+    background:linear-gradient(180deg, var(--header-from), var(--header-to));
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center;
+    padding:20px 0; gap:14px; overflow:hidden;
+    transition:width 0.28s ease, padding 0.28s ease;
+    z-index:5;
+  }
+  .sidebar.expanded{ width:220px; align-items:stretch; padding:20px 14px; overflow-y:auto; }
+  .sidebar-header{ display:flex; align-items:center; gap:10px; margin-bottom:8px; align-self:center; width:100%; justify-content:center; overflow:hidden; }
+  .sidebar.expanded .sidebar-header{ justify-content:flex-start; }
+  .sidebar .logo{ width:34px; height:34px; border-radius:50%; background:rgba(108,99,255,0.10); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:background 0.2s ease; border:none; }
+  .sidebar .logo:hover{ background:rgba(108,99,255,0.18); }
+  .brand-logo{ display:none; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; }
+  .sidebar.expanded .brand-logo{ display:flex; }
+  .brand-logo img{ height:26px; width:auto; max-width:120px; object-fit:contain; flex-shrink:0; }
+  .sidebar .nav-item{
+    width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); cursor:pointer; transition:background 0.2s ease, color 0.2s ease, width 0.2s ease;
+    background:transparent; border:none; align-self:center; flex-shrink:0; gap:12px; overflow:hidden;
+    white-space:nowrap; text-decoration:none;
+  }
+  .sidebar.expanded .nav-item{ width:100%; justify-content:flex-start; padding:0 10px; align-self:stretch; }
+  .sidebar .nav-item:hover{ background:rgba(108,99,255,0.08); }
+  .sidebar .nav-item.active{ background:var(--primary); color:#FFFFFF; }
+  .sidebar svg{ width:17px; height:17px; flex-shrink:0; }
+  .nav-label{ display:none; font-size:13px; font-weight:500; }
+  .sidebar.expanded .nav-label{ display:inline-block; }
+
+  .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .header{
+    background:linear-gradient(120deg, var(--header-from), var(--header-to));
+    border-bottom-right-radius:32px;
+    padding:24px 28px 0 28px;
+  }
+  .header-top{ display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:14px; padding-bottom:18px; }
+  .header h1{ color:var(--text); font-size:22px; font-weight:700; margin-bottom:5px; }
+  .header-sub{ font-size:13px; color:var(--muted); }
+  .header-meta{ display:flex; align-items:center; gap:16px; font-size:12.5px; color:var(--muted); flex-wrap:wrap; margin-top:8px; }
+  .header-meta span{ display:flex; align-items:center; gap:6px; }
+  .header-meta svg{ width:13px; height:13px; }
+
+  /* ============ BREADCRUMBS (2 only) ============ */
+  .breadcrumb-bar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-bottom:16px; }
+  .crumb-sep{ color:var(--border); font-size:13px; }
+  .crumb{
+    font-family:inherit; border:1px solid transparent; background:var(--hover); color:var(--muted);
+    font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; transition:background 0.2s ease, color 0.2s ease;
+  }
+  .crumb svg{ width:13px; height:13px; }
+  .crumb:hover{ background:rgba(108,99,255,0.14); color:var(--primary); }
+  .crumb.active{ background:var(--primary); color:#fff; }
+
+  .body{ flex:1; padding:20px 28px 32px 28px; min-width:0; }
+  .main-panel{ display:none; }
+  .main-panel.active{ display:block; }
+
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 2px 10px rgba(30,41,59,0.04); }
+  .btn{ padding:9px 16px; font-size:13px; font-weight:600; border-radius:10px; cursor:pointer; border:none; transition:opacity 0.2s ease, background 0.2s ease; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; text-decoration:none; }
+  .btn svg{ width:14px; height:14px; }
+  .btn-primary{ background:var(--primary); color:#fff; }
+  .btn-primary:hover{ opacity:0.9; }
+  .btn-primary:disabled{ opacity:0.6; cursor:not-allowed; }
+  .btn-outline{ background:#fff; color:var(--text); border:1px solid var(--border); }
+  .btn-outline:hover{ background:var(--bg); }
+  .btn-danger{ background:var(--danger); color:#fff; }
+  .btn-danger:hover{ opacity:0.9; }
+  .btn-sm{ padding:6px 12px; font-size:12px; }
+
+  /* ---- shared form field styles (registration) ---- */
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1/-1; }
+  .field label{ font-size:12px; font-weight:600; color:var(--muted); }
+  .field label .req{ color:var(--danger); margin-left:2px; }
+  .field input, .field select, .field textarea{
+    padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:13px;
+    font-family:inherit; color:var(--text); background:var(--bg); transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:var(--primary); background:#fff; }
+  .field textarea{ resize:vertical; min-height:70px; }
+  .field.error{ }
+  .field.error > .file-upload .file-upload-btn,
+  .field.error input, .field.error select, .field.error textarea{ border-color:var(--danger); background:#fff5f7; }
+  .field-error-msg{ font-size:11px; color:var(--danger); display:none; }
+  .field.error .field-error-msg{ display:block; }
+  .form-alert{ display:none; align-items:center; gap:8px; font-size:12.5px; color:var(--danger); background:rgba(255,111,145,0.08); border:1px solid rgba(255,111,145,0.25); border-radius:10px; padding:10px 14px; margin-bottom:16px; }
+  .form-alert.show{ display:flex; }
+  .form-alert svg{ width:15px; height:15px; flex-shrink:0; }
+  .steps{ display:flex; align-items:center; gap:0; margin-bottom:28px; }
+  .step{ display:flex; align-items:center; gap:10px; flex:1; }
+  .step-circle{ width:30px; height:30px; border-radius:50%; background:var(--hover); color:var(--muted); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; transition:background 0.2s ease, color 0.2s ease; }
+  .step.done .step-circle{ background:var(--success); color:#fff; }
+  .step.active .step-circle{ background:var(--primary); color:#fff; }
+  .step-label{ font-size:12px; font-weight:600; color:var(--muted); }
+  .step.active .step-label, .step.done .step-label{ color:var(--text); }
+  .step-line{ flex:1; height:2px; background:var(--border); margin:0 8px; }
+  .section-title{ font-size:14px; font-weight:700; color:var(--text); margin:22px 0 12px; }
+  .section-title:first-child{ margin-top:0; }
+  .section-hint{ font-size:12px; color:var(--muted); margin:-8px 0 16px; }
+  .divider{ height:1px; background:var(--border); margin:18px 0; }
+  .step-panel{ display:none; }
+  .step-panel.active{ display:block; }
+  .vaccine-row-wrap{ position:relative; padding-right:32px; }
+  .remove-vaccine{ position:absolute; top:0; right:0; width:26px; height:26px; border-radius:50%; border:1px solid var(--border); background:#fff; color:var(--muted); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s ease, color 0.15s ease; }
+  .remove-vaccine:hover{ background:var(--danger); color:#fff; border-color:var(--danger); }
+  .remove-vaccine svg{ width:13px; height:13px; }
+
+  /* ---- document / photo upload ---- */
+  .file-upload{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .file-upload input[type="file"]{ position:absolute; width:1px; height:1px; opacity:0; overflow:hidden; }
+  .file-upload-btn{
+    padding:9px 14px; font-size:12.5px; font-weight:600; border-radius:10px; background:#fff;
+    border:1px solid var(--border); color:var(--text); cursor:pointer; display:inline-flex;
+    align-items:center; gap:6px; transition:background 0.2s ease, border-color 0.2s ease; flex-shrink:0;
+  }
+  .file-upload-btn:hover{ background:var(--bg); }
+  .file-upload-btn svg{ width:14px; height:14px; color:var(--primary); }
+  .file-upload-name{ font-size:12px; color:var(--muted); overflow:hidden; text-overflow:ellipsis; }
+  .photo-preview-wrap{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .photo-preview{ width:64px; height:64px; border-radius:16px; object-fit:cover; border:1px solid var(--border); background:var(--hover); }
+  .photo-preview.placeholder{ display:flex; align-items:center; justify-content:center; color:var(--muted); }
+  .photo-preview.placeholder svg{ width:24px; height:24px; }
+  .doc-list{ list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .doc-list li{ display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text); }
+  .doc-list li svg{ width:14px; height:14px; color:var(--secondary); flex-shrink:0; }
+
+  /* ---- shared table / records styles ---- */
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); font-weight:600; padding:10px 12px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  td{ padding:11px 12px; border-bottom:1px solid var(--border); color:var(--text); white-space:nowrap; }
+  tr:last-child td{ border-bottom:none; }
+  tr:hover td{ background:var(--hover); }
+  .badge{ display:inline-flex; align-items:center; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; }
+  .badge-success{ background:rgba(20,184,166,0.12); color:var(--success); }
+  .badge-warning{ background:rgba(251,191,36,0.15); color:#B7791F; }
+  .badge-danger{ background:rgba(255,111,145,0.12); color:var(--danger); }
+  .avatar-sm{ width:32px; height:32px; border-radius:50%; background:var(--hover); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; background-size:cover; background-position:center; }
+  .name-cell{ display:flex; align-items:center; gap:10px; }
+  .table-wrap{ overflow-x:auto; }
+  table{ min-width:820px; }
+  .action-cell{ display:flex; gap:6px; }
+  .icon-btn{ width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:#fff; color:var(--muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background 0.15s ease, color 0.15s ease, border-color 0.15s ease; flex-shrink:0; }
+  .icon-btn svg{ width:14px; height:14px; }
+  .icon-btn:hover{ background:var(--hover); color:var(--primary); border-color:var(--primary); }
+  .icon-btn.danger:hover{ background:rgba(255,111,145,0.10); color:var(--danger); border-color:var(--danger); }
+  .icon-btn.warn:hover{ background:rgba(251,191,36,0.15); color:#B7791F; border-color:#FBBF24; }
+  .toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .search-bar{ display:flex; align-items:center; gap:8px; padding:9px 14px; border:1px solid var(--border); border-radius:10px; background:#fff; min-width:220px; flex:1; max-width:340px; }
+  .search-bar svg{ width:15px; height:15px; color:var(--muted); flex-shrink:0; }
+  .search-bar input{ border:none; outline:none; font-size:13px; flex:1; font-family:inherit; color:var(--text); min-width:0; background:transparent; }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .chip{ padding:7px 14px; font-size:12px; font-weight:600; border-radius:999px; background:var(--hover); color:var(--muted); cursor:pointer; border:1px solid transparent; transition:background 0.15s ease, color 0.15s ease; }
+  .chip.active{ background:var(--primary); color:#fff; }
+  .filter-bar{ display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+  .filter-field{ position:relative; min-width:150px; flex:1 1 150px; max-width:220px; }
+  .filter-field-label{ font-size:11px; font-weight:600; color:var(--muted); margin-bottom:5px; }
+  .filter-select{ width:100%; display:flex; align-items:center; justify-content:space-between; padding:8px 11px; font-size:12.5px; border:1px solid var(--border); border-radius:9px; background:var(--bg); color:var(--text); cursor:pointer; transition:background 0.2s ease, border-color 0.2s ease; }
+  .filter-select span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .filter-select:hover{ background:var(--hover); }
+  .filter-select.open{ border-color:var(--primary); background:var(--hover); }
+  .filter-select svg{ width:13px; height:13px; color:var(--muted); flex-shrink:0; transition:transform 0.2s ease; }
+  .filter-select.open svg{ transform:rotate(180deg); }
+  .filter-dropdown{ position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1px solid var(--border); border-radius:9px; box-shadow:0 10px 24px rgba(30,41,59,0.12); max-height:180px; overflow-y:auto; z-index:20; display:none; }
+  .filter-dropdown.show{ display:block; }
+  .filter-option{ padding:8px 11px; font-size:12.5px; color:var(--text); cursor:pointer; transition:background 0.15s ease; }
+  .filter-option:hover{ background:var(--hover); }
+  .filter-option.selected{ color:var(--primary); font-weight:600; background:rgba(108,99,255,0.06); }
+  .filter-reset-btn{ flex:0 0 auto; }
+  .results-count{ font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .empty-row td{ text-align:center; color:var(--muted); padding:28px; font-size:13px; }
+
+  .modal-overlay{ position:fixed; inset:0; background:rgba(36,30,61,0.45); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .modal-overlay.show{ display:flex; }
+  .modal-box{ background:#fff; border-radius:16px; max-width:480px; width:100%; max-height:85vh; overflow-y:auto; padding:22px 24px; box-shadow:0 24px 60px rgba(30,41,59,0.25); }
+  .modal-box.modal-sm{ max-width:380px; }
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:10px; }
+  .modal-title{ font-size:16px; font-weight:700; color:var(--text); }
+  .modal-close{ width:28px; height:28px; border-radius:50%; border:none; background:var(--hover); color:var(--muted); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .modal-close svg{ width:14px; height:14px; }
+  .modal-close:hover{ background:var(--border); }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+  .modal-form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .modal-field{ display:flex; flex-direction:column; gap:4px; }
+  .modal-field.full{ grid-column:1/-1; }
+  .modal-field label{ font-size:11.5px; font-weight:600; color:var(--muted); }
+  .modal-field input, .modal-field select{ padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:12.5px; font-family:inherit; color:var(--text); background:var(--bg); }
+  .modal-field input:focus, .modal-field select:focus{ outline:none; border-color:var(--primary); background:#fff; }
+  .modal-field.error input, .modal-field.error select{ border-color:var(--danger); background:#fff5f7; }
+  .modal-field-error-msg{ font-size:10.5px; color:var(--danger); display:none; }
+  .modal-field.error .modal-field-error-msg{ display:block; }
+  .info-list{ display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; }
+  .info-item .k{ font-size:11px; color:var(--muted); margin-bottom:2px; }
+  .info-item .v{ font-size:13px; font-weight:600; color:var(--text); }
+  .delete-warning{ display:flex; gap:10px; align-items:flex-start; font-size:13px; color:var(--text); background:rgba(255,111,145,0.08); border:1px solid rgba(255,111,145,0.25); border-radius:10px; padding:12px 14px; }
+  .delete-warning svg{ width:18px; height:18px; color:var(--danger); flex-shrink:0; margin-top:1px; }
+  .modal-photo-row{ display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  .modal-photo{ width:56px; height:56px; border-radius:14px; object-fit:cover; border:1px solid var(--border); }
+
+  @media (max-width:900px){ .form-grid, .modal-form-grid, .info-list{ grid-template-columns:1fr; } }
+  @media (max-width:700px){
+    .body{ padding:16px 16px 24px 16px; }
+    .header{ padding:18px 16px 0 16px; }
+    .toolbar{ flex-direction:column; align-items:stretch; }
+    .search-bar{ max-width:none; }
+    .toolbar .btn{ justify-content:center; }
+    .filter-field{ max-width:none; flex:1 1 100%; }
+  }
+
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
+      </button>
+      <div class="brand-logo">
+        <img src="logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div id="sidebarNav"></div>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <div class="header-top">
+        <div>
+          <h1 id="mainTitle">Child Registration</h1>
+          <div class="header-sub" id="mainSub">Register a child's details, medical history, growth, vaccination and documents in one flow</div>
+          <div class="header-meta" id="headerMeta"></div>
+        </div>
+      </div>
+      <div class="breadcrumb-bar">
+        <button class="crumb active" data-tab="registration" onclick="switchTab('registration')">
+          <span id="crumbIcon1"></span>Child Registration
+        </button>
+        <span class="crumb-sep">/</span>
+        <button class="crumb" data-tab="patients" onclick="switchTab('patients')">
+          <span id="crumbIcon2"></span>Child Records
+        </button>
+      </div>
+    </header>
+
+    <div class="body">
+
+      <!-- ===================== PANEL 1 : CHILD REGISTRATION ===================== -->
+      <section class="main-panel active" id="panel-registration">
+        <div class="card" style="padding:24px 28px;max-width:900px;margin:0 auto;">
+          <div class="steps" id="stepsBar"></div>
+          <div class="form-alert" id="formAlert"></div>
+
+          <div class="step-panel active" data-step="1">
+            <div class="section-title">Child &amp; parent details</div>
+            <div class="form-grid">
+              <div class="field"><label>Patient ID</label><input value="PED-1043" disabled></div>
+              <div class="field" data-required><label>Child Name<span class="req">*</span></label><input id="regChildName" placeholder="e.g. Aarav Mehta"><span class="field-error-msg">Child name is required</span></div>
+              <div class="field" data-required><label>Date of Birth<span class="req">*</span></label><input type="date"><span class="field-error-msg">Date of birth is required</span></div>
+              <div class="field"><label>Gender</label><select id="regGender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+              <div class="field"><label>Blood Group</label><select><option>Unknown</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></div>
+              <div class="field" data-required><label>Parent / Guardian Name<span class="req">*</span></label><input id="regParentName" placeholder="e.g. Neha Mehta"><span class="field-error-msg">Parent / guardian name is required</span></div>
+              <div class="field" data-required><label>Mobile Number<span class="req">*</span></label><input id="regMobile" placeholder="+91" maxlength="13"><span class="field-error-msg">A valid mobile number is required</span></div>
+              <div class="field"><label>Email</label><input type="email" placeholder="parent@email.com"></div>
+              <div class="field full"><label>Address</label><textarea placeholder="House no, street, city, pincode"></textarea></div>
+              <div class="field"><label>Emergency Contact Name</label><input placeholder="e.g. Grandparent / Relative"></div>
+              <div class="field"><label>Emergency Contact Number</label><input placeholder="+91" maxlength="13"></div>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="2">
+            <div class="section-title">Medical history</div>
+            <div class="form-grid">
+              <div class="field full"><label>Birth History</label><textarea placeholder="Full term / preterm, delivery type, birth weight, complications"></textarea></div>
+              <div class="field full"><label>Past Medical History</label><textarea placeholder="Previous illnesses, surgeries, admissions"></textarea></div>
+              <div class="field"><label>Allergies</label><input placeholder="e.g. Penicillin, peanuts"></div>
+              <div class="field"><label>Chronic Diseases</label><input placeholder="e.g. Asthma, epilepsy"></div>
+              <div class="field full"><label>Hospitalizations</label><textarea placeholder="Reason, date, hospital"></textarea></div>
+              <div class="field full"><label>Family History</label><textarea placeholder="Relevant hereditary or family conditions"></textarea></div>
+              <div class="field full"><label>Current Medications</label><textarea placeholder="Name, dosage, frequency"></textarea></div>
+              <div class="field full"><label>Development Milestones</label><textarea placeholder="Sitting, crawling, walking, speech milestones and ages"></textarea></div>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="3">
+            <div class="section-title">Growth monitoring (initial measurement)</div>
+            <div class="form-grid">
+              <div class="field"><label>Height (cm)</label><input type="number" id="hgt" oninput="calcBmi()" placeholder="e.g. 78" min="0" step="0.1"></div>
+              <div class="field"><label>Weight (kg)</label><input type="number" id="wgt" oninput="calcBmi()" placeholder="e.g. 9.5" min="0" step="0.1"></div>
+              <div class="field"><label>Head Circumference (cm)</label><input type="number" placeholder="e.g. 46" min="0" step="0.1"></div>
+              <div class="field"><label>BMI (auto-calculated)</label><input id="bmiOut" disabled placeholder="—"></div>
+              <div class="field full"><label>Notes</label><textarea placeholder="Growth chart percentile, observations"></textarea></div>
+            </div>
+          </div>
+
+          <div class="step-panel" data-step="4">
+            <div class="section-title">Vaccination record</div>
+            <div id="vaccineRows"></div>
+            <button class="btn btn-outline btn-sm" onclick="addVaccineRow()" type="button" style="margin-top:6px;">
+              <span id="regPlusIconSlot"></span>Add another vaccine
+            </button>
+          </div>
+
+          <div class="step-panel" data-step="5">
+            <div class="section-title">Documents &amp; photo</div>
+            <div class="section-hint">These are kept on the child's record for identification and future visits.</div>
+
+            <div class="field full" data-required data-photofield>
+              <label>Child's Photo<span class="req">*</span></label>
+              <div class="photo-preview-wrap">
+                <img id="photoPreview" class="photo-preview" style="display:none;" alt="Child photo preview">
+                <div id="photoPlaceholder" class="photo-preview placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+                </div>
+                <div class="file-upload">
+                  <input type="file" id="docPhoto" accept="image/*" onchange="previewPhoto(this)">
+                  <label for="docPhoto" class="file-upload-btn"><span id="uploadIconSlot1"></span>Choose photo</label>
+                  <span class="file-upload-name" id="docPhotoName">No file chosen</span>
+                </div>
+              </div>
+              <span class="field-error-msg">A recent photo of the child is required</span>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label>Birth Certificate</label>
+                <div class="file-upload">
+                  <input type="file" id="docBirth" onchange="fileChosen(this)">
+                  <label for="docBirth" class="file-upload-btn"><span id="uploadIconSlot2"></span>Choose file</label>
+                  <span class="file-upload-name" id="docBirthName">No file chosen</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>Immunization / Vaccination Card</label>
+                <div class="file-upload">
+                  <input type="file" id="docImmun" onchange="fileChosen(this)">
+                  <label for="docImmun" class="file-upload-btn"><span id="uploadIconSlot3"></span>Choose file</label>
+                  <span class="file-upload-name" id="docImmunName">No file chosen</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>ID Proof (Aadhaar / Passport / Birth ID)</label>
+                <div class="file-upload">
+                  <input type="file" id="docId" onchange="fileChosen(this)">
+                  <label for="docId" class="file-upload-btn"><span id="uploadIconSlot4"></span>Choose file</label>
+                  <span class="file-upload-name" id="docIdName">No file chosen</span>
+                </div>
+              </div>
+              <div class="field">
+                <label>Insurance Card (if any)</label>
+                <div class="file-upload">
+                  <input type="file" id="docInsurance" onchange="fileChosen(this)">
+                  <label for="docInsurance" class="file-upload-btn"><span id="uploadIconSlot5"></span>Choose file</label>
+                  <span class="file-upload-name" id="docInsuranceName">No file chosen</span>
+                </div>
+              </div>
+              <div class="field full">
+                <label>Previous Medical / Discharge Records</label>
+                <div class="file-upload">
+                  <input type="file" id="docMedical" onchange="fileChosen(this)">
+                  <label for="docMedical" class="file-upload-btn"><span id="uploadIconSlot6"></span>Choose file</label>
+                  <span class="file-upload-name" id="docMedicalName">No file chosen</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <div style="display:flex; justify-content:space-between;">
+            <button class="btn btn-outline" id="backBtn" onclick="changeStep(-1)">Back</button>
+            <button class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== PANEL 2 : CHILD RECORDS ===================== -->
+      <section class="main-panel" id="panel-patients">
+        <div class="toolbar">
+          <div class="search-bar"><span id="searchIconSlot"></span><input id="searchInput" placeholder="Search by child name, ID or mobile number"></div>
+          <button class="btn btn-primary" onclick="switchTab('registration')"><span id="patPlusIconSlot"></span>New Child</button>
+        </div>
+
+        <div class="chips" id="chipsRow"></div>
+        <div class="filter-bar" id="filterBar"></div>
+        <div class="results-count" id="resultsCount"></div>
+
+        <div class="card table-wrap" style="padding:8px 8px 4px;">
+          <table>
+            <thead><tr>
+              <th>Child</th><th>Patient ID</th><th>Age / DOB</th><th>Gender</th><th>Parent / Guardian</th><th>Mobile</th><th>Doctor</th><th>Last Visit</th><th>Vaccination</th><th>Actions</th>
+            </tr></thead>
+            <tbody id="patientRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay"></div>
+
+<script>
+
+/* =========================================================
+   ICON LIBRARY (merged)
+========================================================= */
+const ICON = {
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/></svg>`,
+  syringe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3-2-2"/><path d="M17 7l-9.5 9.5"/><path d="M4 20l2.5-2.5"/><path d="M9 12l3 3M11 10l3 3"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>`,
+  activity: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg>`,
+  clipboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg>`,
+  file: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>`,
+  receipt: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h8"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.7 7.7 0 000-3l2-1.5-2-3.4-2.3.9a7.5 7.5 0 00-2.6-1.5L14 2h-4l-.5 2.5a7.5 7.5 0 00-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.7 7.7 0 000 3l-2 1.6 2 3.4 2.3-1a7.5 7.5 0 002.6 1.5L10 22h4l.5-2.5a7.5 7.5 0 002.6-1.5l2.3 1 2-3.4z"/></svg>`,
+  user: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>`,
+  userPlus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7"/><path d="M18 8v6M15 11h6"/></svg>`,
+  stethoscope: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v6a4 4 0 004 4 4 4 0 004-4V3"/><path d="M12 13v3a5 5 0 005 5 5 5 0 005-5"/><circle cx="20" cy="6" r="2"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>`,
+  chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
+  eye: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.4 18a1.5 1.5 0 001.3 2.2h16.6a1.5 1.5 0 001.3-2.2L13.7 3.9a1.5 1.5 0 00-2.6 0z"/></svg>`,
+  upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M5 21h14"/></svg>`,
+  fileCheck: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/><path d="M9 14l2 2 4-4"/></svg>`
+};
+
+/* =========================================================
+   SIDEBAR — "Patients" entry removed; Child Registration
+   is now the single entry point for this combined page.
+========================================================= */
+const sidebarItems = [
+  { icon: ICON.home,        label: "Dashboard",         href: "index.html" },
+  { icon: ICON.userPlus,    label: "Child Registration", href: "#registration", tab: "registration" },
+  { icon: ICON.calendar,    label: "Appointments",      href: "appointments.html" },
+  { icon: ICON.stethoscope, label: "OPD",                href: "opd.html" },
+  { icon: ICON.syringe,     label: "Vaccinations",      href: "vaccination.html" },
+  { icon: ICON.activity,    label: "Growth",            href: "growth.html" },
+  { icon: ICON.clipboard,   label: "Prescriptions",     href: "prescription.html" },
+  { icon: ICON.file,        label: "Reports",           href: "reports.html" },
+  { icon: ICON.receipt,     label: "Billing",           href: "billing.html" },
+  { icon: ICON.settings,    label: "User Settings",     href: "user.html" },
+  { icon: ICON.user,        label: "Profile",           href: "profile.html" }
+];
+
+const sidebarNav = document.getElementById("sidebarNav");
+sidebarNav.style.display = "contents";
+sidebarItems.forEach(item => {
+  const a = document.createElement("a");
+  a.className = "nav-item";
+  a.title = item.label;
+  a.href = item.href;
+  a.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
+  if (item.tab){
+    a.addEventListener("click", (e) => { e.preventDefault(); switchTab(item.tab); });
+    a.dataset.tab = item.tab;
+  }
+  sidebarNav.appendChild(a);
+});
+
+const sidebar = document.getElementById("sidebar");
+document.getElementById("sidebarToggle").addEventListener("click", () => sidebar.classList.toggle("expanded"));
+
+document.getElementById("headerMeta").innerHTML = `
+  <span>${ICON.calendar} July 6, 2026</span>
+  <span>${ICON.user} Front Desk · Dr. Ananya Sharma</span>
+`;
+document.getElementById("crumbIcon1").innerHTML = ICON.userPlus;
+document.getElementById("crumbIcon2").innerHTML = ICON.user;
+document.getElementById("regPlusIconSlot").innerHTML = ICON.plus;
+document.getElementById("patPlusIconSlot").innerHTML = ICON.plus;
+document.getElementById("searchIconSlot").innerHTML = ICON.search;
+["uploadIconSlot1","uploadIconSlot2","uploadIconSlot3","uploadIconSlot4","uploadIconSlot5","uploadIconSlot6"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = ICON.upload;
+});
+
+/* =========================================================
+   BREADCRUMB TAB SWITCHING (only 2 tabs, no sidebar redirect)
+========================================================= */
+const headerCopy = {
+  registration: { title: "Child Registration", sub: "Register a child's details, medical history, growth, vaccination and documents in one flow" },
+  patients:     { title: "Child Records", sub: "1,248 children registered · manage records and history" }
+};
+
+function switchTab(tab){
+  document.getElementById("panel-registration").classList.toggle("active", tab === "registration");
+  document.getElementById("panel-patients").classList.toggle("active", tab === "patients");
+  document.querySelectorAll(".crumb").forEach(c => c.classList.toggle("active", c.dataset.tab === tab));
+  document.querySelectorAll(".nav-item[data-tab]").forEach(a => a.classList.toggle("active", a.dataset.tab === tab));
+
+  document.getElementById("mainTitle").textContent = headerCopy[tab].title;
+  document.getElementById("mainSub").textContent = headerCopy[tab].sub;
+
+  history.replaceState(null, "", "#" + tab);
+}
+
+const initialTab = location.hash === "#patients" ? "patients" : "registration";
+switchTab(initialTab);
+
+/* =========================================================
+   REGISTRATION — STEP NAVIGATION (now 5 steps incl. Documents)
+========================================================= */
+const stepNames = ["Basic Details", "Medical History", "Growth", "Vaccination", "Documents"];
+let currentStep = 1;
+
+function renderSteps(){
+  document.getElementById("stepsBar").innerHTML = stepNames.map((label, i) => {
+    const n = i + 1;
+    const cls = n < currentStep ? "step done" : n === currentStep ? "step active" : "step";
+    const circle = n < currentStep ? ICON.check : n;
+    const line = n < stepNames.length ? '<div class="step-line"></div>' : "";
+    return `<div class="${cls}"><div class="step-circle">${circle}</div><div class="step-label">${label}</div></div>${line}`;
+  }).join("");
+}
+
+function showStep(){
+  document.querySelectorAll(".step-panel").forEach(p => p.classList.toggle("active", p.dataset.step == currentStep));
+  document.getElementById("backBtn").style.visibility = currentStep === 1 ? "hidden" : "visible";
+  document.getElementById("nextBtn").textContent = currentStep === stepNames.length ? "Save & View Child Records" : "Next";
+  hideAlert();
+  renderSteps();
+}
+
+function showAlert(msg){
+  const alertBox = document.getElementById("formAlert");
+  alertBox.innerHTML = ICON.alert + `<span>${msg}</span>`;
+  alertBox.classList.add("show");
+}
+function hideAlert(){ document.getElementById("formAlert").classList.remove("show"); }
+
+/* validates both text/select/textarea fields AND file-upload fields (e.g. child photo) */
+function validateCurrentStep(){
+  const panel = document.querySelector(`.step-panel[data-step="${currentStep}"]`);
+  if (!panel) return true;
+  const requiredFields = panel.querySelectorAll("[data-required]");
+  let firstInvalid = null;
+  let allValid = true;
+
+  requiredFields.forEach(field => {
+    const input = field.querySelector("input, select, textarea");
+    let invalid;
+    if (input.type === "file"){
+      invalid = !(input.files && input.files.length);
+    } else {
+      invalid = input.value.trim() === "";
+    }
+    field.classList.toggle("error", invalid);
+    if (invalid){ allValid = false; if (!firstInvalid) firstInvalid = input; }
+  });
+
+  if (!allValid){
+    showAlert("Please fill in all required fields marked with * before continuing.");
+    if (firstInvalid) firstInvalid.focus();
+  } else {
+    hideAlert();
+  }
+  return allValid;
+}
+
+document.querySelectorAll(".step-panel .field[data-required] input:not([type='file'])").forEach(input => {
+  input.addEventListener("input", () => {
+    if (input.value.trim() !== "") input.closest(".field").classList.remove("error");
+  });
+});
+
+function changeStep(dir){
+  if (dir === 1){
+    if (!validateCurrentStep()) return;
+    if (currentStep === stepNames.length){
+      saveRegistration();
+      return;
+    }
+  }
+  currentStep = Math.min(Math.max(1, currentStep + dir), stepNames.length);
+  showStep();
+}
+
+/* =========================================================
+   DOCUMENTS & PHOTO — file chooser helpers
+========================================================= */
+function fileChosen(input){
+  const nameSpan = document.getElementById(input.id + "Name");
+  if (nameSpan) nameSpan.textContent = (input.files && input.files.length) ? input.files[0].name : "No file chosen";
+}
+
+function previewPhoto(input){
+  fileChosen(input);
+  const preview = document.getElementById("photoPreview");
+  const placeholder = document.getElementById("photoPlaceholder");
+  if (input.files && input.files[0]){
+    input.closest(".field").classList.remove("error");
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = "block";
+      placeholder.style.display = "none";
+    };
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    preview.style.display = "none";
+    placeholder.style.display = "flex";
+  }
+}
+
+/* on save: collect the child's info + documents, add to Child Records, jump to that tab */
+function saveRegistration(){
+  const nextBtn = document.getElementById("nextBtn");
+  nextBtn.disabled = true;
+  nextBtn.textContent = "Saving…";
+
+  const finish = (photoData) => {
+    const name = document.getElementById("regChildName").value.trim() || "New Child";
+    const parent = document.getElementById("regParentName").value.trim() || "—";
+    const mobileRaw = document.getElementById("regMobile").value.replace(/\D/g, "") || "0000000000";
+    const gender = document.getElementById("regGender").value;
+
+    const docFields = [
+      ["docBirth", "Birth Certificate"],
+      ["docImmun", "Immunization Card"],
+      ["docId", "ID Proof"],
+      ["docInsurance", "Insurance Card"],
+      ["docMedical", "Medical Records"]
+    ];
+    const docs = [];
+    docFields.forEach(([id, label]) => {
+      const inp = document.getElementById(id);
+      if (inp && inp.files && inp.files.length) docs.push(`${label}: ${inp.files[0].name}`);
+    });
+
+    patients.unshift({
+      name, id: "PED-" + Math.floor(1044 + Math.random() * 900),
+      age: "0m", dob: "—", gender, ageGroup: "0-1 yr",
+      parent, mobile: mobileRaw.slice(-10).padStart(10, "0"),
+      doctor: "Dr. Ananya Sharma", visit: "06 Jul 2026", vacc: "due", growthPending: true,
+      photo: photoData || null, docs
+    });
+
+    nextBtn.disabled = false;
+    nextBtn.textContent = "Save & View Child Records";
+
+    switchTab("patients");
+    renderTable();
+  };
+
+  const photoInput = document.getElementById("docPhoto");
+  if (photoInput && photoInput.files && photoInput.files[0]){
+    const reader = new FileReader();
+    reader.onload = e => setTimeout(() => finish(e.target.result), 300);
+    reader.readAsDataURL(photoInput.files[0]);
+  } else {
+    setTimeout(() => finish(null), 400);
+  }
+}
+
+function calcBmi(){
+  const h = parseFloat(document.getElementById("hgt").value) / 100;
+  const w = parseFloat(document.getElementById("wgt").value);
+  const out = document.getElementById("bmiOut");
+  out.value = (h > 0 && w > 0) ? (w / (h * h)).toFixed(1) : "";
+}
+
+const doctorOptions = ["Dr. Ananya Sharma", "Dr. Rohan Mehta", "Dr. Kavita Nair"];
+let vaccineCount = 0;
+
+function addVaccineRow(){
+  vaccineCount++;
+  const wrap = document.createElement("div");
+  wrap.className = "vaccine-row-wrap";
+  wrap.style.marginBottom = "14px";
+  wrap.style.paddingBottom = "14px";
+  wrap.style.borderBottom = "1px dashed var(--border)";
+
+  const rowsContainer = document.getElementById("vaccineRows");
+  const isFirst = rowsContainer.children.length === 0;
+
+  wrap.innerHTML = `
+    ${isFirst ? "" : `<button type="button" class="remove-vaccine" title="Remove this vaccine">${ICON.x}</button>`}
+    <div class="form-grid">
+      <div class="field"><label>Vaccine Name</label><select><option>BCG</option><option>OPV</option><option>DPT</option><option>Hepatitis B</option><option>MMR</option><option>Rotavirus</option><option>Pentavalent</option></select></div>
+      <div class="field"><label>Given Date</label><input type="date"></div>
+      <div class="field"><label>Batch Number</label><input placeholder="e.g. BN-2291"></div>
+      <div class="field"><label>Doctor</label><select>${doctorOptions.map(d => `<option>${d}</option>`).join("")}</select></div>
+      <div class="field"><label>Next Due Date</label><input type="date"></div>
+      <div class="field"><label>Status</label><select><option>Given</option><option>Scheduled</option><option>Missed</option></select></div>
+      <div class="field full" style="flex-direction:row;align-items:center;gap:8px;">
+        <input type="checkbox" checked style="width:16px;height:16px;"><label style="font-size:12.5px;color:var(--text);">Send SMS / WhatsApp reminder for next due date</label>
+      </div>
+    </div>
+  `;
+
+  const removeBtn = wrap.querySelector(".remove-vaccine");
+  if (removeBtn) removeBtn.addEventListener("click", () => wrap.remove());
+  rowsContainer.appendChild(wrap);
+}
+
+addVaccineRow();
+showStep();
+
+/* =========================================================
+   CHILD RECORDS — DATA (unchanged mock, + photo/docs support)
+========================================================= */
+let patients = [
+  { name:"Ayaan Verma",  id:"PED-1042", age:"2y 3m", dob:"12 Apr 2024", gender:"Male",   ageGroup:"1-3 yrs", parent:"Rohit Verma",  mobile:"9876543210", doctor:"Dr. Ananya Sharma", visit:"28 Jun 2026", vacc:"up",      growthPending:false, photo:null, docs:["Immunization Card: card_ayaan.pdf"] },
+  { name:"Saanvi Gupta", id:"PED-1041", age:"5m",    dob:"01 Feb 2026", gender:"Female", ageGroup:"0-1 yr",  parent:"Priya Gupta",  mobile:"9123456780", doctor:"Dr. Rohan Mehta",  visit:"30 Jun 2026", vacc:"due",     growthPending:true,  photo:null, docs:[] },
+  { name:"Kabir Nair",   id:"PED-1039", age:"4y 1m", dob:"05 Jun 2022", gender:"Male",   ageGroup:"3-5 yrs", parent:"Anjali Nair",  mobile:"9988766554", doctor:"Dr. Kavita Nair",  visit:"20 Jun 2026", vacc:"overdue", growthPending:false, photo:null, docs:["Birth Certificate: kabir_bc.pdf","ID Proof: kabir_aadhaar.pdf"] },
+  { name:"Myra Kapoor",  id:"PED-1038", age:"1y 6m", dob:"10 Jan 2025", gender:"Female", ageGroup:"1-3 yrs", parent:"Vikram Kapoor",mobile:"9000012345", doctor:"Dr. Ananya Sharma", visit:"15 Jun 2026", vacc:"up",      growthPending:true,  photo:null, docs:[] },
+  { name:"Vihaan Rao",   id:"PED-1035", age:"7y 2m", dob:"02 May 2019", gender:"Male",   ageGroup:"5+ yrs",  parent:"Sneha Rao",    mobile:"9811122334", doctor:"Dr. Rohan Mehta",  visit:"02 Jun 2026", vacc:"up",      growthPending:false, photo:null, docs:["Insurance Card: vihaan_insurance.pdf"] },
+  { name:"Anaya Singh",  id:"PED-1030", age:"3y 8m", dob:"14 Nov 2022", gender:"Female", ageGroup:"3-5 yrs", parent:"Karan Singh",  mobile:"9700088990", doctor:"Dr. Kavita Nair",  visit:"25 May 2026", vacc:"due",     growthPending:false, photo:null, docs:[] }
+];
+
+const vaccMeta = {
+  up:      { label:"Up to date", badge:"badge-success" },
+  due:     { label:"Due soon",   badge:"badge-warning" },
+  overdue: { label:"Overdue",    badge:"badge-danger" }
+};
+const initials = n => n.split(" ").map(w => w[0]).slice(0, 2).join("");
+
+/* =========================================================
+   CHILD RECORDS — QUICK CHIPS
+========================================================= */
+const chipDefs = ["All Children", "Vaccination Due", "Growth Pending", "Recent Visits"];
+let activeChip = chipDefs[0];
+const recentCutoff = new Date("2026-06-22");
+
+const chipsRow = document.getElementById("chipsRow");
+chipDefs.forEach(c => {
+  const el = document.createElement("span");
+  el.className = "chip" + (c === activeChip ? " active" : "");
+  el.textContent = c;
+  el.addEventListener("click", () => {
+    activeChip = c;
+    document.querySelectorAll(".chip").forEach(x => x.classList.remove("active"));
+    el.classList.add("active");
+    renderTable();
+  });
+  chipsRow.appendChild(el);
+});
+
+/* =========================================================
+   CHILD RECORDS — DROPDOWN FILTER BAR
+========================================================= */
+const filterDefs = [
+  { key: "vaccStatus", label: "Vaccination", options: ["All", "Up to date", "Due soon", "Overdue"] },
+  { key: "gender",     label: "Gender",      options: ["All", "Male", "Female"] },
+  { key: "ageGroup",   label: "Age Group",   options: ["All", "0-1 yr", "1-3 yrs", "3-5 yrs", "5+ yrs"] },
+  { key: "doctor",     label: "Doctor",      options: ["All Doctors", "Dr. Ananya Sharma", "Dr. Rohan Mehta", "Dr. Kavita Nair"] }
+];
+const filterState = {};
+filterDefs.forEach(f => filterState[f.key] = f.options[0]);
+
+function closeAllDropdowns(except){
+  document.querySelectorAll(".filter-dropdown").forEach(dd => { if (dd !== except) dd.classList.remove("show"); });
+  document.querySelectorAll(".filter-select").forEach(sel => { if (sel.nextElementSibling !== except) sel.classList.remove("open"); });
+}
+
+const filterBar = document.getElementById("filterBar");
+filterDefs.forEach(f => {
+  const field = document.createElement("div");
+  field.className = "filter-field";
+
+  const label = document.createElement("div");
+  label.className = "filter-field-label";
+  label.textContent = f.label;
+
+  const select = document.createElement("div");
+  select.className = "filter-select";
+  select.innerHTML = `<span>${filterState[f.key]}</span>${ICON.chevron}`;
+
+  const dropdown = document.createElement("div");
+  dropdown.className = "filter-dropdown";
+  f.options.forEach(opt => {
+    const optEl = document.createElement("div");
+    optEl.className = "filter-option" + (opt === filterState[f.key] ? " selected" : "");
+    optEl.textContent = opt;
+    optEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      filterState[f.key] = opt;
+      select.querySelector("span").textContent = opt;
+      dropdown.querySelectorAll(".filter-option").forEach(o => o.classList.remove("selected"));
+      optEl.classList.add("selected");
+      dropdown.classList.remove("show");
+      select.classList.remove("open");
+      renderTable();
+    });
+    dropdown.appendChild(optEl);
+  });
+
+  select.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.classList.contains("show");
+    closeAllDropdowns();
+    if (!isOpen){ dropdown.classList.add("show"); select.classList.add("open"); }
+  });
+
+  field.appendChild(label);
+  field.appendChild(select);
+  field.appendChild(dropdown);
+  filterBar.appendChild(field);
+});
+
+const resetBtn = document.createElement("button");
+resetBtn.className = "btn btn-outline btn-sm filter-reset-btn";
+resetBtn.textContent = "Reset filters";
+resetBtn.addEventListener("click", () => {
+  filterDefs.forEach(f => filterState[f.key] = f.options[0]);
+  document.querySelectorAll(".filter-field").forEach((field, i) => {
+    const f = filterDefs[i];
+    field.querySelector(".filter-select span").textContent = f.options[0];
+    field.querySelectorAll(".filter-option").forEach(o => o.classList.toggle("selected", o.textContent === f.options[0]));
+  });
+  document.getElementById("searchInput").value = "";
+  activeChip = chipDefs[0];
+  document.querySelectorAll(".chip").forEach(x => x.classList.remove("active"));
+  chipsRow.firstChild.classList.add("active");
+  renderTable();
+});
+filterBar.appendChild(resetBtn);
+
+document.addEventListener("click", () => closeAllDropdowns());
+document.getElementById("searchInput").addEventListener("input", renderTable);
+
+/* =========================================================
+   CHILD RECORDS — FILTER + RENDER TABLE
+========================================================= */
+function getFilteredPatients(){
+  const search = document.getElementById("searchInput").value.trim().toLowerCase();
+
+  return patients.filter(p => {
+    if (activeChip === "Vaccination Due" && p.vacc === "up") return false;
+    if (activeChip === "Growth Pending" && !p.growthPending) return false;
+    if (activeChip === "Recent Visits" && new Date(p.visit) < recentCutoff) return false;
+
+    if (filterState.vaccStatus !== "All" && vaccMeta[p.vacc].label !== filterState.vaccStatus) return false;
+    if (filterState.gender !== "All" && p.gender !== filterState.gender) return false;
+    if (filterState.ageGroup !== "All" && p.ageGroup !== filterState.ageGroup) return false;
+    if (filterState.doctor !== "All Doctors" && p.doctor !== filterState.doctor) return false;
+
+    if (search){
+      const hay = `${p.name} ${p.id} ${p.mobile}`.toLowerCase();
+      if (!hay.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function renderTable(){
+  const filtered = getFilteredPatients();
+  const rowsEl = document.getElementById("patientRows");
+  document.getElementById("resultsCount").textContent = `${filtered.length} of ${patients.length} children shown`;
+
+  if (!filtered.length){
+    rowsEl.innerHTML = `<tr class="empty-row"><td colspan="10">No children match the current search / filters.</td></tr>`;
+    return;
+  }
+
+  rowsEl.innerHTML = filtered.map(p => {
+    const vm = vaccMeta[p.vacc];
+    const avatarStyle = p.photo ? ` style="background-image:url('${p.photo}')"` : "";
+    return `
+    <tr>
+      <td><div class="name-cell"><div class="avatar-sm"${avatarStyle}>${p.photo ? "" : initials(p.name)}</div><div><div style="font-weight:600">${p.name}</div><div style="font-size:11px;color:var(--muted)">${p.dob}</div></div></div></td>
+      <td>${p.id}</td>
+      <td>${p.age}</td>
+      <td>${p.gender}</td>
+      <td>${p.parent}</td>
+      <td>+91 ${formatMobile(p.mobile)}</td>
+      <td>${p.doctor}</td>
+      <td>${p.visit}</td>
+      <td><span class="badge ${vm.badge}">${vm.label}</span></td>
+      <td>
+        <div class="action-cell">
+          <button class="icon-btn" title="View" onclick="openViewModal('${p.id}')">${ICON.eye}</button>
+          <button class="icon-btn warn" title="Edit" onclick="openEditModal('${p.id}')">${ICON.edit}</button>
+          <button class="icon-btn danger" title="Delete" onclick="openDeleteModal('${p.id}')">${ICON.trash}</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function formatMobile(m){ return m.replace(/(\d{5})(\d{5})/, "$1 $2"); }
+function getPatientById(id){ return patients.find(p => p.id === id); }
+
+/* =========================================================
+   CHILD RECORDS — OVERLAY MODALS: View / Edit / Delete
+========================================================= */
+const modalOverlay = document.getElementById("modalOverlay");
+
+function openModal(html){ modalOverlay.innerHTML = html; modalOverlay.classList.add("show"); }
+function closeModal(){ modalOverlay.classList.remove("show"); modalOverlay.innerHTML = ""; }
+modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+function openViewModal(id){
+  const p = getPatientById(id);
+  if (!p) return;
+  const vm = vaccMeta[p.vacc];
+  const docsHtml = p.docs && p.docs.length
+    ? `<ul class="doc-list">${p.docs.map(d => `<li>${ICON.fileCheck}${d}</li>`).join("")}</ul>`
+    : `<div style="font-size:12.5px;color:var(--muted);">No documents uploaded yet.</div>`;
+
+  openModal(`
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-title">Child's record</div>
+        <button class="modal-close" onclick="closeModal()">${ICON.x}</button>
+      </div>
+      <div class="modal-photo-row">
+        ${p.photo ? `<img class="modal-photo" src="${p.photo}" alt="${p.name}">` : `<div class="avatar-sm" style="width:56px;height:56px;font-size:16px;">${initials(p.name)}</div>`}
+        <div>
+          <div style="font-weight:700;font-size:14.5px;">${p.name}</div>
+          <div style="font-size:12px;color:var(--muted);">${p.id}</div>
+        </div>
+      </div>
+      <div class="info-list">
+        <div class="info-item"><div class="k">Date of Birth</div><div class="v">${p.dob}</div></div>
+        <div class="info-item"><div class="k">Age</div><div class="v">${p.age}</div></div>
+        <div class="info-item"><div class="k">Gender</div><div class="v">${p.gender}</div></div>
+        <div class="info-item"><div class="k">Age Group</div><div class="v">${p.ageGroup}</div></div>
+        <div class="info-item"><div class="k">Parent / Guardian</div><div class="v">${p.parent}</div></div>
+        <div class="info-item"><div class="k">Mobile</div><div class="v">+91 ${formatMobile(p.mobile)}</div></div>
+        <div class="info-item"><div class="k">Doctor</div><div class="v">${p.doctor}</div></div>
+        <div class="info-item"><div class="k">Last Visit</div><div class="v">${p.visit}</div></div>
+        <div class="info-item"><div class="k">Vaccination</div><div class="v"><span class="badge ${vm.badge}">${vm.label}</span></div></div>
+        <div class="info-item"><div class="k">Growth Monitoring</div><div class="v">${p.growthPending ? "Pending" : "Up to date"}</div></div>
+      </div>
+      <div class="section-title" style="margin-top:18px;">Documents on file</div>
+      ${docsHtml}
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" onclick="openEditModal('${p.id}')">Edit</button>
+      </div>
+    </div>
+  `);
+}
+
+function openEditModal(id){
+  const p = getPatientById(id);
+  if (!p) return;
+  const genderOpts = ["Male", "Female", "Other"];
+  const doctorOpts = ["Dr. Ananya Sharma", "Dr. Rohan Mehta", "Dr. Kavita Nair"];
+  openModal(`
+    <div class="modal-box">
+      <div class="modal-head">
+        <div class="modal-title">Edit child — ${p.id}</div>
+        <button class="modal-close" onclick="closeModal()">${ICON.x}</button>
+      </div>
+      <div class="modal-form-grid">
+        <div class="modal-field full" data-required data-field="name">
+          <label>Child Name</label>
+          <input value="${p.name}">
+          <span class="modal-field-error-msg">Name is required</span>
+        </div>
+        <div class="modal-field" data-required data-field="mobile" data-rule="mobile">
+          <label>Mobile Number</label>
+          <input value="${p.mobile}" maxlength="13">
+          <span class="modal-field-error-msg">Enter a valid 10-digit mobile number</span>
+        </div>
+        <div class="modal-field" data-field="parent">
+          <label>Parent / Guardian</label>
+          <input value="${p.parent}">
+        </div>
+        <div class="modal-field" data-field="gender">
+          <label>Gender</label>
+          <select>${genderOpts.map(g => `<option ${g === p.gender ? "selected" : ""}>${g}</option>`).join("")}</select>
+        </div>
+        <div class="modal-field" data-field="doctor">
+          <label>Doctor</label>
+          <select>${doctorOpts.map(d => `<option ${d === p.doctor ? "selected" : ""}>${d}</option>`).join("")}</select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEdit('${p.id}')">Save changes</button>
+      </div>
+    </div>
+  `);
+}
+
+const editRuleCheckers = {
+  mobile: v => /^\+?\d{10,13}$/.test(v.replace(/\s/g, ""))
+};
+
+function saveEdit(id){
+  const box = modalOverlay.querySelector(".modal-box");
+  const fields = box.querySelectorAll(".modal-field");
+  let allValid = true;
+  let firstInvalid = null;
+  const values = {};
+
+  fields.forEach(field => {
+    const key = field.getAttribute("data-field");
+    const input = field.querySelector("input, select");
+    const value = input.value.trim();
+    const required = field.hasAttribute("data-required");
+    const rule = field.getAttribute("data-rule");
+    let valid = true;
+    if (required && value === "") valid = false;
+    if (valid && value !== "" && rule && editRuleCheckers[rule] && !editRuleCheckers[rule](value)) valid = false;
+
+    field.classList.toggle("error", !valid);
+    if (!valid){ allValid = false; if (!firstInvalid) firstInvalid = input; }
+    values[key] = value;
+  });
+
+  if (!allValid){ if (firstInvalid) firstInvalid.focus(); return; }
+
+  const p = getPatientById(id);
+  p.name = values.name;
+  p.mobile = values.mobile.replace(/\D/g, "");
+  p.parent = values.parent;
+  p.gender = values.gender;
+  p.doctor = values.doctor;
+
+  closeModal();
+  renderTable();
+}
+
+function openDeleteModal(id){
+  const p = getPatientById(id);
+  if (!p) return;
+  openModal(`
+    <div class="modal-box modal-sm">
+      <div class="modal-head">
+        <div class="modal-title">Delete child record</div>
+        <button class="modal-close" onclick="closeModal()">${ICON.x}</button>
+      </div>
+      <div class="delete-warning">
+        ${ICON.alert}
+        <div>Are you sure you want to delete <strong>${p.name}'s</strong> record (${p.id})? This action cannot be undone.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDelete('${p.id}')">Delete record</button>
+      </div>
+    </div>
+  `);
+}
+
+function confirmDelete(id){
+  patients = patients.filter(p => p.id !== id);
+  closeModal();
+  renderTable();
+}
+
+modalOverlay.addEventListener("input", (e) => {
+  const field = e.target.closest(".modal-field");
+  if (!field) return;
+  const value = e.target.value.trim();
+  const required = field.hasAttribute("data-required");
+  const rule = field.getAttribute("data-rule");
+  let valid = true;
+  if (required && value === "") valid = false;
+  if (valid && value !== "" && rule && editRuleCheckers[rule] && !editRuleCheckers[rule](value)) valid = false;
+  if (valid) field.classList.remove("error");
+});
+
+/* =========================================================
+   INITIAL RENDER
+========================================================= */
+renderTable();
+
+</script>
+</body>
+</html>

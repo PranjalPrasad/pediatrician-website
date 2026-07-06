@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vaccination Schedule · Pediatric Clinic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --primary:#6C63FF;
+    --secondary:#4F8EF7;
+    --accent:#A78BFA;
+    --bg:#F3F1FC;
+    --card:#FFFFFF;
+    --success:#14B8A6;
+    --warning:#FBBF24;
+    --danger:#FF6F91;
+    --text:#241E3D;
+    --muted:#8B85A6;
+    --border:#ECE8F9;
+    --hover:#F1EDFC;
+    --header-from:#FFFFFF;
+    --header-to:#FFFFFF;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    font-family:'Inter', sans-serif;
+    background:linear-gradient(135deg, #E9FBF2 0%, #EEF6F9 25%, #F1EDFC 60%, #FBEFF6 100%);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+  .dashboard{ display:flex; width:100%; min-height:100vh; }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{
+    width:72px;
+    flex-shrink:0;
+    background:linear-gradient(180deg, var(--header-from), var(--header-to));
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px 0;
+    gap:14px;
+    overflow:hidden;
+    transition:width 0.28s ease, padding 0.28s ease;
+  }
+
+  .sidebar.expanded{
+    width:220px;
+    align-items:stretch;
+    padding:20px 14px;
+    overflow-y:auto;
+  }
+
+  .sidebar-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+    align-self:center;
+    width:100%;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  .sidebar.expanded .sidebar-header{
+    justify-content:flex-start;
+  }
+
+  .sidebar .logo{
+    width:34px; height:34px;
+    border-radius:50%;
+    background:rgba(108,99,255,0.10);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:background 0.2s ease;
+    border:none;
+  }
+
+  .sidebar .logo:hover{ background:rgba(108,99,255,0.18); }
+
+  .brand-logo{
+    display:none;
+    align-items:center;
+    gap:8px;
+    overflow:hidden;
+    white-space:nowrap;
+  }
+
+  .sidebar.expanded .brand-logo{ display:flex; }
+
+  .brand-logo img{
+    height:26px;
+    width:auto;
+    max-width:120px;
+    object-fit:contain;
+    flex-shrink:0;
+  }
+
+  .brand-logo span{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    letter-spacing:0.2px;
+  }
+
+  .sidebar .nav-item{
+    width:38px; height:38px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted); cursor:pointer;
+    transition:background 0.2s ease, color 0.2s ease, width 0.2s ease;
+    background:transparent; border:none; align-self:center; flex-shrink:0;
+    gap:12px; overflow:hidden; white-space:nowrap; text-decoration:none;
+  }
+  .sidebar.expanded .nav-item{ width:100%; justify-content:flex-start; padding:0 10px; align-self:stretch; }
+  .sidebar .nav-item:hover{ background:rgba(108,99,255,0.08); }
+  .sidebar .nav-item.active{ background:var(--primary); color:#FFFFFF; }
+  .sidebar svg{ width:17px; height:17px; flex-shrink:0; }
+  .nav-label{ display:none; font-size:13px; font-weight:500; }
+  .sidebar.expanded .nav-label{ display:inline-block; }
+  .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .header{
+    background:linear-gradient(120deg, var(--header-from), var(--header-to));
+    border-bottom-right-radius:40px;
+    padding:28px 32px 24px 32px;
+    display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px;
+  }
+  .header h1{ color:var(--text); font-size:24px; font-weight:700; margin-bottom:6px; }
+  .header-sub{ font-size:13px; color:var(--muted); }
+  .header-meta{ display:flex; align-items:center; gap:18px; font-size:13px; color:var(--muted); flex-wrap:wrap; }
+  .header-meta span{ display:flex; align-items:center; gap:6px; }
+  .header-meta svg{ width:14px; height:14px; }
+  .body{ flex:1; padding:24px 32px 32px 32px; }
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    box-shadow:0 2px 10px rgba(30,41,59,0.04);
+    transition:transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+  }
+  .card:hover{ transform:translateY(-5px) scale(1.02); box-shadow:0 14px 28px rgba(30,41,59,0.12); }
+  .kpi-row{ display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+  .kpi-card{ flex:1; min-width:170px; padding:16px; }
+  .kpi-icon{
+    width:38px; height:38px; border-radius:12px; background:var(--hover); color:var(--primary);
+    display:flex; align-items:center; justify-content:center; margin-bottom:12px;
+  }
+  .kpi-icon svg{ width:18px; height:18px; }
+  .kpi-icon.warning{ background:rgba(251,191,36,0.15); color:#B7791F; }
+  .kpi-icon.danger{ background:rgba(255,111,145,0.12); color:var(--danger); }
+  .kpi-icon.info{ background:rgba(79,142,247,0.12); color:var(--secondary); }
+  .kpi-icon.success{ background:rgba(20,184,166,0.12); color:var(--success); }
+  .kpi-label{ font-size:12px; font-weight:500; color:var(--muted); margin-bottom:4px; }
+  .kpi-value{ font-size:24px; font-weight:700; color:var(--text); }
+  .btn{ padding:9px 16px; font-size:13px; font-weight:600; border-radius:10px; cursor:pointer; border:none; transition:opacity 0.2s ease, background 0.2s ease; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .btn svg{ width:14px; height:14px; }
+  .btn-primary{ background:var(--primary); color:#fff; }
+  .btn-primary:hover{ opacity:0.9; }
+  .btn-primary:disabled{ background:var(--border); color:var(--muted); cursor:not-allowed; opacity:1; }
+  .btn-outline{ background:#fff; color:var(--text); border:1px solid var(--border); }
+  .btn-outline:hover{ background:var(--bg); }
+  .btn-sm{ padding:6px 12px; font-size:12px; }
+  .chart-card{ padding:20px; margin-bottom:20px; }
+  .chart-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .chart-title{ font-size:16px; font-weight:600; color:var(--text); }
+  .chart-subtitle{ font-size:12px; color:var(--muted); margin-top:2px; }
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th{ text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); font-weight:600; padding:10px 12px; border-bottom:1px solid var(--border); white-space:nowrap; }
+  td{ padding:12px; border-bottom:1px solid var(--border); color:var(--text); white-space:nowrap; }
+  tr:last-child td{ border-bottom:none; }
+  tr:hover td{ background:var(--hover); }
+  .badge{ display:inline-flex; align-items:center; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; }
+  .badge-success{ background:rgba(20,184,166,0.12); color:var(--success); }
+  .badge-warning{ background:rgba(251,191,36,0.15); color:#B7791F; }
+  .badge-danger{ background:rgba(255,111,145,0.12); color:var(--danger); }
+  .badge-info{ background:rgba(79,142,247,0.12); color:var(--secondary); }
+  .badge-neutral{ background:var(--hover); color:var(--muted); }
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1/-1; }
+  .field label{ font-size:12px; font-weight:600; color:var(--muted); }
+  .field input, .field select, .field textarea{
+    padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:13px;
+    font-family:inherit; color:var(--text); background:var(--bg);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:var(--primary); background:#fff; }
+  .field textarea{ resize:vertical; min-height:70px; }
+  .tabs{ display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:20px; flex-wrap:wrap; }
+  .tab{ padding:10px 16px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; }
+  .tab.active{ color:var(--primary); border-bottom-color:var(--primary); }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+  .search-bar{ display:flex; align-items:center; gap:8px; padding:9px 14px; border:1px solid var(--border); border-radius:10px; background:#fff; min-width:220px; }
+  .search-bar svg{ width:15px; height:15px; color:var(--muted); flex-shrink:0; }
+  .search-bar input{ border:none; outline:none; font-size:13px; flex:1; font-family:inherit; color:var(--text); min-width:0; }
+  .toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{ padding:7px 14px; font-size:12px; font-weight:600; border-radius:999px; background:var(--hover); color:var(--muted); cursor:pointer; border:1px solid transparent; user-select:none; }
+  .chip.active{ background:var(--primary); color:#fff; }
+  .avatar-sm{ width:32px; height:32px; border-radius:50%; background:var(--hover); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+  .name-cell{ display:flex; align-items:center; gap:10px; }
+  .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .empty-hint{ font-size:12px; color:var(--muted); text-align:center; padding:24px; white-space:normal; }
+  .divider{ height:1px; background:var(--border); margin:18px 0; }
+  @media (max-width:900px){ .form-grid, .info-list{ grid-template-columns:1fr; } }
+
+  /* ---- responsiveness ---- */
+  @media (max-width:768px){
+    .header{ padding:20px; border-bottom-right-radius:24px; }
+    .header h1{ font-size:20px; }
+    .body{ padding:16px; }
+    .toolbar{ flex-direction:column; align-items:stretch; }
+    .chips{ width:100%; }
+    .chip{ flex:1; text-align:center; }
+    .search-bar{ width:100%; min-width:0; }
+    table{ min-width:640px; }
+  }
+  @media (max-width:560px){
+    .sidebar{ width:60px; padding:16px 0; }
+    .sidebar.expanded{ width:190px; }
+    .kpi-row{ flex-direction:column; }
+  }
+
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
+      </button>
+      <!-- Logo image: replace src="logo.png" with your clinic's actual logo file -->
+      <div class="brand-logo">
+        <img src="/logo.png" alt="Little Sprouts Clinic logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <!-- nav items injected by JS -->
+    <div id="sidebarNav"></div>
+  </aside>
+  <div class="main">
+    <header class="header">
+      <div>
+        <h1>Vaccination Schedule</h1>
+        <div class="header-sub">Clinic-wide due, overdue and completed vaccinations</div>
+      </div>
+    </header>
+    <div class="body">
+
+<div class="kpi-row">
+  <div class="card kpi-card">
+    <div class="kpi-icon warning"></div>
+    <div class="kpi-label">Due Today</div>
+    <div class="kpi-value" id="statDue">0</div>
+  </div>
+  <div class="card kpi-card">
+    <div class="kpi-icon danger"></div>
+    <div class="kpi-label">Overdue</div>
+    <div class="kpi-value" id="statOverdue">0</div>
+  </div>
+  <div class="card kpi-card">
+    <div class="kpi-icon info"></div>
+    <div class="kpi-label">Upcoming (7 days)</div>
+    <div class="kpi-value" id="statUpcoming">0</div>
+  </div>
+  <div class="card kpi-card">
+    <div class="kpi-icon success"></div>
+    <div class="kpi-label">Completed this month</div>
+    <div class="kpi-value" id="statCompleted">0</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="chips" id="statusChips">
+    <span class="chip active" data-status="all">All</span>
+    <span class="chip" data-status="due">Due Today</span>
+    <span class="chip" data-status="overdue">Overdue</span>
+    <span class="chip" data-status="upcoming">Upcoming</span>
+  </div>
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input type="text" id="searchPatient" placeholder="Search patient...">
+  </div>
+</div>
+
+<div class="card" style="padding:8px;">
+  <div class="table-scroll">
+    <table>
+      <thead><tr><th>Patient</th><th>Vaccine</th><th>Due Date</th><th>Status</th><th>Reminder Sent</th><th></th></tr></thead>
+      <tbody id="vaccineTableBody">
+        <tr data-patient="saanvi gupta" data-status="due">
+          <td>Saanvi Gupta</td><td>Hepatitis B — Dose 2</td><td>04 Jul 2026</td>
+          <td><span class="badge badge-warning">Due Today</span></td>
+          <td><span class="badge badge-success">Yes</span></td>
+          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
+        </tr>
+        <tr data-patient="kabir nair" data-status="overdue">
+          <td>Kabir Nair</td><td>DPT Booster</td><td>25 Jun 2026</td>
+          <td><span class="badge badge-danger">Overdue</span></td>
+          <td><span class="badge badge-neutral">No</span></td>
+          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
+        </tr>
+        <tr data-patient="ayaan verma" data-status="upcoming">
+          <td>Ayaan Verma</td><td>MMR</td><td>12 Jul 2026</td>
+          <td><span class="badge badge-info">Upcoming</span></td>
+          <td><span class="badge badge-success">Yes</span></td>
+          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
+        </tr>
+        <tr data-patient="anaya singh" data-status="upcoming">
+          <td>Anaya Singh</td><td>Rotavirus — Dose 3</td><td>08 Jul 2026</td>
+          <td><span class="badge badge-info">Upcoming</span></td>
+          <td><span class="badge badge-success">Yes</span></td>
+          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
+        </tr>
+        <tr data-patient="myra kapoor" data-status="overdue">
+          <td>Myra Kapoor</td><td>OPV Booster</td><td>30 Jun 2026</td>
+          <td><span class="badge badge-danger">Overdue</span></td>
+          <td><span class="badge badge-neutral">No</span></td>
+          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
+        </tr>
+        <tr id="noResultsRow" style="display:none;">
+          <td colspan="6" class="empty-hint">No vaccinations match the selected filters.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+<script>
+
+const ICON = {
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>`,
+  users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15 20c0-2.4 1-4.2 2.7-5.2"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/></svg>`,
+  syringe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3-2-2"/><path d="M17 7l-9.5 9.5"/><path d="M4 20l2.5-2.5"/><path d="M9 12l3 3M11 10l3 3"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.3 18a2 2 0 001.7 3h16a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>`,
+  ruler: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1.5"/><path d="M7 8v3M11 8v3M15 8v3"/></svg>`,
+  activity: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg>`,
+  clipboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg>`,
+  file: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>`,
+  receipt: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h8"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.7 7.7 0 000-3l2-1.5-2-3.4-2.3.9a7.5 7.5 0 00-2.6-1.5L14 2h-4l-.5 2.5a7.5 7.5 0 00-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.7 7.7 0 000 3l-2 1.6 2 3.4 2.3-1a7.5 7.5 0 002.6 1.5L10 22h4l.5-2.5a7.5 7.5 0 002.6-1.5l2.3 1 2-3.4z"/></svg>`,
+  user: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>`
+};
+
+const sidebarItems = [
+  { icon: ICON.home, label: "Dashboard", href: "dashboard.html" },
+  { icon: ICON.user, label: "Patients", href: "patients.html" },
+  { icon: ICON.calendar, label: "Appointments", href: "appointments.html" },
+  { icon: ICON.syringe, label: "Vaccinations", href: "vaccination-schedule.html" },
+  { icon: ICON.activity, label: "Growth", href: "growth-monitoring.html" },
+  { icon: ICON.clipboard, label: "Prescriptions", href: "prescription.html" },
+  { icon: ICON.file, label: "Reports", href: "reports.html" },
+  { icon: ICON.receipt, label: "Billing", href: "billing.html" },
+  { icon: ICON.settings, label: "User Management", href: "user-management.html" },
+  { icon: ICON.user, label: "Profile", href: "#" }
+];
+const sidebarNav = document.getElementById("sidebarNav");
+sidebarNav.style.display = "contents";
+sidebarItems.forEach(item => {
+  const a = document.createElement("a");
+  a.className = "nav-item" + (item.label === "Vaccinations" ? " active" : "");
+  a.title = item.label;
+  a.href = item.href;
+  a.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
+  sidebarNav.appendChild(a);
+});
+const sidebar = document.getElementById("sidebar");
+document.getElementById("sidebarToggle").addEventListener("click", () => sidebar.classList.toggle("expanded"));
+
+/* KPI icons */
+document.querySelectorAll(".kpi-icon").forEach((el) => {
+  if (el.classList.contains("warning")) el.innerHTML = ICON.clock;
+  else if (el.classList.contains("danger")) el.innerHTML = ICON.alert;
+  else if (el.classList.contains("info")) el.innerHTML = ICON.calendar;
+  else if (el.classList.contains("success")) el.innerHTML = ICON.check;
+});
+
+/* =========================================================
+   DATA + STATE
+========================================================= */
+const tbody = document.getElementById("vaccineTableBody");
+const noResultsRow = document.getElementById("noResultsRow");
+
+function getDataRows(){
+  return Array.from(tbody.querySelectorAll("tr[data-status]"));
+}
+
+const STATUS_META = {
+  due:       { label: "Due Today", badgeClass: "badge-warning" },
+  overdue:   { label: "Overdue",   badgeClass: "badge-danger" },
+  upcoming:  { label: "Upcoming",  badgeClass: "badge-info" },
+  completed: { label: "Completed", badgeClass: "badge-success" }
+};
+
+/* =========================================================
+   KPI STATS (recomputed from live table data)
+========================================================= */
+let completedThisMonth = 214; // running total, seeded so the KPI isn't just today's marks
+function recomputeStats(){
+  const rows = getDataRows();
+  document.getElementById("statDue").textContent = rows.filter(r => r.dataset.status === "due").length;
+  document.getElementById("statOverdue").textContent = rows.filter(r => r.dataset.status === "overdue").length;
+  document.getElementById("statUpcoming").textContent = rows.filter(r => r.dataset.status === "upcoming").length;
+  document.getElementById("statCompleted").textContent = completedThisMonth;
+}
+
+/* =========================================================
+   FILTERS: status chips + search
+========================================================= */
+const statusChips = document.querySelectorAll("#statusChips .chip");
+const searchInput = document.getElementById("searchPatient");
+
+function activeStatus(){
+  const active = document.querySelector("#statusChips .chip.active");
+  return active ? active.dataset.status : "all";
+}
+
+function applyFilters(){
+  const status = activeStatus();
+  const search = searchInput.value.trim().toLowerCase();
+  let visibleCount = 0;
+
+  getDataRows().forEach(row => {
+    const matchesStatus = status === "all" || row.dataset.status === status;
+    const matchesSearch = !search || row.dataset.patient.includes(search);
+    const visible = matchesStatus && matchesSearch;
+    row.style.display = visible ? "" : "none";
+    if (visible) visibleCount++;
+  });
+
+  noResultsRow.style.display = visibleCount === 0 ? "" : "none";
+}
+
+statusChips.forEach(chip => {
+  chip.addEventListener("click", () => {
+    statusChips.forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    applyFilters();
+  });
+});
+searchInput.addEventListener("input", applyFilters);
+
+/* =========================================================
+   MARK AS GIVEN
+========================================================= */
+tbody.addEventListener("click", (e) => {
+  const btn = e.target.closest('[data-action="mark-given"]');
+  if (!btn) return;
+  const row = btn.closest("tr");
+  if (!row || row.dataset.status === "completed") return;
+
+  row.dataset.status = "completed";
+  row.querySelector("td:nth-child(4)").innerHTML = `<span class="badge ${STATUS_META.completed.badgeClass}">${STATUS_META.completed.label}</span>`;
+  row.querySelector("td:nth-child(5)").innerHTML = `<span class="badge badge-success">Yes</span>`;
+  btn.textContent = "Given";
+  btn.disabled = true;
+
+  completedThisMonth += 1;
+  recomputeStats();
+  applyFilters();
+});
+
+/* ---------- init ---------- */
+recomputeStats();
+applyFilters();
+
+</script>
+</body>
+</html>

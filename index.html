@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pediatric Clinic Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#6C63FF;
+    --secondary:#4F8EF7;
+    --accent:#A78BFA;
+    --bg:#F3F1FC;
+    --card:#FFFFFF;
+    --success:#14B8A6;
+    --warning:#FBBF24;
+    --danger:#FF6F91;
+    --text:#241E3D;
+    --muted:#8B85A6;
+    --border:#ECE8F9;
+    --hover:#F1EDFC;
+    --header-from:#FFFFFF;
+    --header-to:#FFFFFF;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  body{
+    font-family:'Inter', sans-serif;
+    background:linear-gradient(135deg, #E9FBF2 0%, #EEF6F9 25%, #F1EDFC 60%, #FBEFF6 100%);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .dashboard{
+    display:flex;
+    width:100%;
+    min-height:100vh;
+  }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar{
+    width:72px;
+    flex-shrink:0;
+    background:linear-gradient(180deg, var(--header-from), var(--header-to));
+    border-right:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px 0;
+    gap:14px;
+    overflow:hidden;
+    transition:width 0.28s ease, padding 0.28s ease;
+  }
+
+  .sidebar.expanded{
+    width:220px;
+    align-items:stretch;
+    padding:20px 14px;
+    overflow-y:auto;
+  }
+
+  .sidebar-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:8px;
+    align-self:center;
+    width:100%;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  .sidebar.expanded .sidebar-header{
+    justify-content:flex-start;
+  }
+
+  .sidebar .logo{
+    width:34px; height:34px;
+    border-radius:50%;
+    background:rgba(108,99,255,0.10);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:background 0.2s ease;
+    border:none;
+  }
+
+  .sidebar .logo:hover{ background:rgba(108,99,255,0.18); }
+
+  .brand-logo{
+    display:none;
+    align-items:center;
+    gap:8px;
+    overflow:hidden;
+    white-space:nowrap;
+  }
+
+  .sidebar.expanded .brand-logo{ display:flex; }
+
+  .brand-logo img{
+    height:26px;
+    width:auto;
+    max-width:120px;
+    object-fit:contain;
+    flex-shrink:0;
+  }
+
+  .brand-logo span{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    letter-spacing:0.2px;
+  }
+
+  .sidebar .nav-item{
+    width:38px; height:38px;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted);
+    cursor:pointer;
+    transition:background 0.2s ease, color 0.2s ease, width 0.2s ease;
+    background:transparent;
+    border:none;
+    align-self:center;
+    flex-shrink:0;
+    gap:12px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-decoration:none;
+  }
+
+  .sidebar.expanded .nav-item{
+    width:100%;
+    justify-content:flex-start;
+    padding:0 10px;
+    align-self:stretch;
+  }
+
+  .sidebar .nav-item:hover{ background:rgba(108,99,255,0.08); }
+
+  .sidebar .nav-item.active{
+    background:var(--primary);
+    color:#FFFFFF;
+  }
+
+  .sidebar svg{ width:17px; height:17px; flex-shrink:0; }
+
+  .nav-label{
+    display:none;
+    font-size:13px;
+    font-weight:500;
+  }
+
+  .sidebar.expanded .nav-label{ display:inline-block; }
+
+  /* ============ MAIN COLUMN ============ */
+  .main{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .header{
+    background:linear-gradient(120deg, var(--header-from), var(--header-to));
+    border-bottom-right-radius:40px;
+    padding:28px 32px 40px 32px;
+  }
+
+  .header h1{
+    color:var(--text);
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:10px;
+  }
+
+  .header-meta{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    font-size:13px;
+    color:var(--muted);
+    flex-wrap:wrap;
+  }
+
+  .header-meta span{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .header-meta svg{ width:14px; height:14px; }
+
+  /* ============ BODY ============ */
+  .body{
+    flex:1;
+    padding:0 32px 32px 32px;
+    margin-top:-24px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 2px 10px rgba(30,41,59,0.04);
+    transition:transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+  }
+
+  .card:hover{
+    transform:translateY(-5px) scale(1.02);
+    box-shadow:0 14px 28px rgba(30,41,59,0.12);
+  }
+
+  /* KPI ROW */
+  .kpi-row{
+    display:flex;
+    gap:16px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+
+  .kpi-card{
+    flex:1;
+    min-width:150px;
+    padding:16px;
+    transition:box-shadow 0.2s ease;
+  }
+
+  .kpi-card:hover{ box-shadow:0 6px 18px rgba(30,41,59,0.08); }
+
+  .kpi-icon{
+    width:38px; height:38px;
+    border-radius:12px;
+    background:var(--hover);
+    color:var(--primary);
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:12px;
+  }
+
+  .kpi-icon svg{ width:18px; height:18px; }
+
+  .kpi-label{
+    font-size:12px;
+    font-weight:500;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
+
+  .kpi-value{
+    font-size:24px;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:10px;
+    transition:opacity 0.15s ease;
+  }
+
+  .kpi-trend-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .kpi-trend{
+    display:flex;
+    align-items:center;
+    gap:3px;
+    font-size:11px;
+    font-weight:600;
+    padding:2px 8px;
+    border-radius:999px;
+  }
+
+  .kpi-trend svg{ width:12px; height:12px; }
+
+  .kpi-trend.up{ color:var(--success); background:rgba(46,204,113,0.12); }
+  .kpi-trend.down{ color:var(--danger); background:rgba(255,107,107,0.12); }
+
+  .kpi-sub{ font-size:11px; color:var(--muted); }
+
+  /* CHART CARDS */
+  .chart-card{
+    padding:20px;
+    margin-bottom:20px;
+  }
+
+  .chart-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .chart-title{ font-size:16px; font-weight:600; color:var(--text); }
+  .chart-subtitle{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+  .legend{
+    display:flex;
+    gap:16px;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .legend span{ display:flex; align-items:center; gap:6px; transition:opacity 0.2s ease; }
+  .legend span.dim{ opacity:0.35; }
+
+  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  .empty-note{
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+    padding:20px 0;
+  }
+
+  .bottom-row{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+  }
+
+  .bottom-row .card{
+    flex:1;
+    min-width:280px;
+    padding:20px;
+  }
+
+  /* AXIS / CHART SVG TEXT */
+  .axis-label{ font-size:10.5px; fill:var(--muted); font-family:'Inter', sans-serif; }
+  .grid-line{ stroke:var(--border); stroke-width:1; }
+
+  /* TOOLTIP */
+  .chart-tooltip{
+    position:absolute;
+    display:none;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:6px 10px;
+    font-size:11.5px;
+    color:var(--text);
+    box-shadow:0 4px 14px rgba(30,41,59,0.10);
+    pointer-events:none;
+    z-index:20;
+  }
+
+  .chart-wrap{ position:relative; }
+
+  /* ============ FILTER PANEL ============ */
+  .filters{
+    width:260px;
+    flex-shrink:0;
+    background:var(--card);
+    border-left:1px solid var(--border);
+    padding:24px 20px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .filters-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:22px;
+    font-size:14px;
+    font-weight:600;
+  }
+
+  .filters-head svg{ width:16px; height:16px; color:var(--primary); }
+
+  .filter-field{ margin-bottom:16px; position:relative; }
+
+  .filter-label{
+    font-size:12px;
+    font-weight:500;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+
+  .filter-select{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:9px 12px;
+    font-size:13px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:var(--bg);
+    color:var(--text);
+    cursor:pointer;
+    transition:background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .filter-select:hover{ background:var(--hover); }
+  .filter-select.open{ border-color:var(--primary); background:var(--hover); }
+  .filter-select svg{ width:14px; height:14px; color:var(--muted); transition:transform 0.2s ease; flex-shrink:0; }
+  .filter-select.open svg{ transform:rotate(180deg); }
+  .filter-select span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .filter-dropdown{
+    position:absolute;
+    top:calc(100% + 4px);
+    left:0;
+    right:0;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:10px;
+    box-shadow:0 10px 24px rgba(30,41,59,0.12);
+    max-height:180px;
+    overflow-y:auto;
+    z-index:30;
+    display:none;
+  }
+
+  .filter-dropdown.show{ display:block; }
+
+  .filter-option{
+    padding:8px 12px;
+    font-size:13px;
+    color:var(--text);
+    cursor:pointer;
+    transition:background 0.15s ease;
+  }
+
+  .filter-option:hover{ background:var(--hover); }
+  .filter-option.selected{ color:var(--primary); font-weight:600; background:rgba(108,99,255,0.06); }
+
+  .filter-actions{
+    display:flex;
+    gap:10px;
+    margin:8px 0 22px 0;
+  }
+
+  .btn{
+    flex:1;
+    padding:9px 0;
+    font-size:13px;
+    font-weight:600;
+    border-radius:10px;
+    cursor:pointer;
+    border:none;
+    transition:opacity 0.2s ease, background 0.2s ease;
+  }
+
+  .btn-primary{ background:var(--primary); color:#fff; }
+  .btn-primary:hover{ opacity:0.9; }
+
+  .btn-outline{
+    background:#fff;
+    color:var(--text);
+    border:1px solid var(--border);
+  }
+  .btn-outline:hover{ background:var(--bg); }
+
+  .filter-status{
+    font-size:11.5px;
+    color:var(--primary);
+    margin:-10px 0 16px 0;
+    min-height:14px;
+  }
+
+  .links{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:20px;
+  }
+
+  .links a{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:inherit;
+    text-decoration:none;
+    transition:color 0.2s ease;
+  }
+
+  .links a:hover{ color:var(--text); }
+  .links svg{ width:15px; height:15px; }
+
+  .profile{
+    margin-top:auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding-top:16px;
+    border-top:1px solid var(--border);
+  }
+
+  .avatar{
+    width:36px; height:36px;
+    border-radius:50%;
+    background:var(--hover);
+    color:var(--primary);
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px;
+    font-weight:600;
+  }
+
+  .profile-name{ font-size:13px; font-weight:600; color:var(--text); }
+  .profile-email{ font-size:11px; color:var(--muted); }
+
+  @media (max-width: 1100px){
+    .filters{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
+      </button>
+      <!-- Logo image: replace src="logo.png" with your clinic's actual logo file -->
+      <div class="brand-logo">
+        <img src="/logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <!-- nav items injected by JS -->
+    <div id="sidebarNav"></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="header">
+      <h1>Pediatric Clinic Dashboard</h1>
+      <div class="header-meta" id="headerMeta"></div>
+    </header>
+
+    <div class="body">
+      <div class="kpi-row" id="kpiRow"></div>
+
+      <div class="card chart-card">
+        <div class="chart-head">
+          <div>
+            <div class="chart-title">Patient Visits</div>
+            <div class="chart-subtitle">Monthly overview</div>
+          </div>
+          <div class="legend" id="lineLegend">
+            <span data-key="a"><span class="dot" style="background:var(--primary)"></span>Appointments</span>
+            <span data-key="v"><span class="dot" style="background:var(--secondary)"></span>Vaccinations</span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <svg id="lineChart" width="100%" viewBox="0 0 760 240"></svg>
+          <div class="chart-tooltip" id="lineTooltip"></div>
+        </div>
+      </div>
+
+      <div class="bottom-row">
+        <div class="card">
+          <div class="chart-head">
+            <div>
+              <div class="chart-title">Monthly Vaccinations</div>
+              <div class="chart-subtitle">By vaccine type</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <svg id="barChart" width="100%" viewBox="0 0 360 220"></svg>
+            <div class="chart-tooltip" id="barTooltip"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="chart-head">
+            <div>
+              <div class="chart-title">Patient Distribution</div>
+              <div class="chart-subtitle">By state</div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; justify-content:center; height:220px;">
+            <svg viewBox="0 0 320 340" width="200" height="220">
+              <path d="M170 20 C200 25 215 45 220 65 C245 75 260 95 255 115
+                       C270 130 275 150 260 165 C275 185 270 210 250 220
+                       C255 245 240 265 220 270 C215 290 200 305 185 300
+                       C180 315 165 325 155 315 C140 320 130 305 135 290
+                       C110 285 100 265 110 250 C90 240 85 215 100 200
+                       C85 185 90 160 110 150 C100 130 110 105 135 95
+                       C130 75 145 55 165 50 C160 35 165 22 170 20 Z"
+                fill="#F1EDFC" stroke="#ECE8F9" stroke-width="1.5" />
+              <circle cx="178" cy="78" r="7" fill="#6C63FF" opacity="0.85"><title>Delhi</title></circle>
+              <circle cx="140" cy="210" r="10" fill="#6C63FF" opacity="0.85"><title>Maharashtra</title></circle>
+              <circle cx="150" cy="260" r="8" fill="#6C63FF" opacity="0.85"><title>Karnataka</title></circle>
+              <circle cx="168" cy="305" r="7" fill="#6C63FF" opacity="0.85"><title>Tamil Nadu</title></circle>
+              <circle cx="245" cy="165" r="7" fill="#6C63FF" opacity="0.85"><title>West Bengal</title></circle>
+              <circle cx="95" cy="170" r="6" fill="#6C63FF" opacity="0.85"><title>Gujarat</title></circle>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FILTER PANEL ============ -->
+  <aside class="filters">
+    <div class="filters-head" id="filtersHead"></div>
+    <div id="filterFields"></div>
+    <div class="filter-status" id="filterStatus"></div>
+    <div class="filter-actions">
+      <button class="btn btn-primary" id="applyBtn">Apply</button>
+      <button class="btn btn-outline" id="resetBtn">Reset</button>
+    </div>
+    <div class="links" id="linksList"></div>
+    <div class="profile">
+      <div class="avatar">AS</div>
+      <div>
+        <div class="profile-name">Dr. Ananya Sharma</div>
+        <div class="profile-email">ananya.sharma@clinic.com</div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+/* =========================================================
+   ICON LIBRARY (minimal hand-drawn stroke icons, lucide-like)
+========================================================= */
+const ICON = {
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>`,
+  users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15 20c0-2.4 1-4.2 2.7-5.2"/></svg>`,
+  calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/></svg>`,
+  syringe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3-2-2"/><path d="M17 7l-9.5 9.5"/><path d="M4 20l2.5-2.5"/><path d="M9 12l3 3M11 10l3 3"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>`,
+  ruler: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1.5" transform="rotate(0 12 12)"/><path d="M7 8v3M11 8v3M15 8v3"/></svg>`,
+  activity: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg>`,
+  clipboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg>`,
+  file: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>`,
+  receipt: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h8"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.7 7.7 0 000-3l2-1.5-2-3.4-2.3.9a7.5 7.5 0 00-2.6-1.5L14 2h-4l-.5 2.5a7.5 7.5 0 00-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.7 7.7 0 000 3l-2 1.6 2 3.4 2.3-1a7.5 7.5 0 002.6 1.5L10 22h4l.5-2.5a7.5 7.5 0 002.6-1.5l2.3 1 2-3.4z"/></svg>`,
+  user: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>`,
+  userPlus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7"/><path d="M18 8v6M15 11h6"/></svg>`,
+  stethoscope: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v6a4 4 0 004 4 4 4 0 004-4V3"/><path d="M12 13v3a5 5 0 005 5 5 5 0 005-5"/><circle cx="20" cy="6" r="2"/></svg>`,
+  trendUp: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-9"/><path d="M15 6h6v6"/></svg>`,
+  trendDown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6 6 4-4 8 9"/><path d="M15 18h6v-6"/></svg>`,
+  filter: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6 8v6l-4 2v-8z"/></svg>`,
+  chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
+  lifebuoy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5 5l4 4M19 5l-4 4M5 19l4-4M19 19l-4-4"/></svg>`,
+  book: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v17H6.5A2.5 2.5 0 004 21.5v-17z"/><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/></svg>`
+};
+
+/* =========================================================
+   SIDEBAR ROUTING
+   Maps every nav item to its actual file in the project,
+   matching the file list in the workspace.
+========================================================= */
+const sidebarItems = [
+  { icon: ICON.home,        label: "Dashboard",     href: "index.html" },
+  { icon: ICON.userPlus,    label: "Registration",  href: "registration.html" },
+  { icon: ICON.user,        label: "Patients",      href: "patients.html" },
+  { icon: ICON.calendar,    label: "Appointments",  href: "appointments.html" },
+  { icon: ICON.stethoscope, label: "OPD",            href: "opd.html" },
+  { icon: ICON.syringe,     label: "Vaccinations",  href: "vaccination.html" },
+  { icon: ICON.activity,    label: "Growth",        href: "growth.html" },
+  { icon: ICON.clipboard,   label: "Prescriptions", href: "prescription.html" },
+  { icon: ICON.file,        label: "Reports",       href: "reports.html" },
+  { icon: ICON.receipt,     label: "Billing",       href: "billing.html" },
+  { icon: ICON.settings,    label: "User Settings", href: "user.html" },
+  { icon: ICON.user,        label: "Profile",       href: "profile.html" }
+];
+
+/* current page filename, used to mark the active nav item */
+const currentPage = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+
+/* =========================================================
+   KPI BASE DATA (numeric base values so filters can scale them)
+========================================================= */
+const kpis = [
+  { key:"registered", label: "Total Registered Children", base: 1248, trend: "+4.2%", up: true, sub: "vs last month", icon: ICON.users },
+  { key:"today",      label: "Today's Appointments",      base: 32,   trend: "+12%",  up: true, sub: "vs yesterday", icon: ICON.calendar },
+  { key:"due",        label: "Vaccinations Due",          base: 18,   trend: "-6%",   up: false,sub: "this week",    icon: ICON.syringe },
+  { key:"completed",  label: "Completed Vaccinations",    base: 214,  trend: "+8%",   up: true, sub: "this month",   icon: ICON.check },
+  { key:"growth",     label: "Growth Monitoring Pending",  base: 9,    trend: "-3%",   up: false,sub: "vs last week", icon: ICON.ruler }
+];
+
+/* =========================================================
+   FILTER DEFINITIONS
+========================================================= */
+const filters = [
+  { key: "doctor",     label: "Doctor",              options: ["All Doctors", "Dr. Ananya Sharma", "Dr. Rohan Mehta", "Dr. Kavita Nair"] },
+  { key: "age",        label: "Age Group",           options: ["All", "0-1 yr", "1-3 yrs", "3-5 yrs", "5+ yrs"] },
+  { key: "vaccStatus", label: "Vaccination Status",  options: ["All", "Completed", "Pending", "Due"] },
+  { key: "visitType",  label: "Visit Type",          options: ["All", "Appointments", "Vaccinations"] },
+  { key: "month",      label: "Month",               options: ["All", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"] },
+  { key: "gender",     label: "Gender",              options: ["All", "Male", "Female"] }
+];
+
+/* live filter state, defaults to first option ("All"/"All Doctors") of each filter */
+const filterState = {};
+filters.forEach(f => filterState[f.key] = f.options[0]);
+
+/* mock multipliers so KPI numbers visibly react to filter changes */
+const doctorFactor = { "All Doctors": 1, "Dr. Ananya Sharma": 0.55, "Dr. Rohan Mehta": 0.3, "Dr. Kavita Nair": 0.22 };
+const genderFactor  = { "All": 1, "Male": 0.54, "Female": 0.46 };
+const ageFactor     = { "All": 1, "0-1 yr": 0.28, "1-3 yrs": 0.24, "3-5 yrs": 0.26, "5+ yrs": 0.22 };
+
+/* =========================================================
+   CHART DATA
+========================================================= */
+const visitData = [
+  { m: "Jan", a: 40, v: 28 }, { m: "Fev", a: 46, v: 34 }, { m: "Mar", a: 44, v: 40 },
+  { m: "Abr", a: 52, v: 38 }, { m: "Mai", a: 49, v: 45 }, { m: "Jun", a: 68, v: 52 },
+  { m: "Jul", a: 74, v: 58 }, { m: "Ago", a: 60, v: 50 }, { m: "Set", a: 55, v: 47 },
+  { m: "Out", a: 58, v: 49 }, { m: "Nov", a: 63, v: 53 }, { m: "Dez", a: 70, v: 60 }
+];
+
+const vaccineData = [
+  { name: "BCG",   value: 18, status: "Completed" },
+  { name: "DPT",   value: 26, status: "Pending" },
+  { name: "MMR",   value: 34, status: "Completed" },
+  { name: "Polio", value: 46, status: "Due" },
+  { name: "HepB",  value: 30, status: "Completed" },
+  { name: "OPV",   value: 22, status: "Pending" },
+  { name: "Rota",  value: 38, status: "Due" }
+];
+
+/* =========================================================
+   RENDER: header meta icons
+========================================================= */
+document.getElementById("headerMeta").innerHTML = `
+  <span>${ICON.calendar} July 4, 2026 &middot; 09:42</span>
+  <span>${ICON.user} Dr. Ananya Sharma</span>
+  <span>${ICON.activity} Sunshine Pediatric Clinic</span>
+`;
+
+/* =========================================================
+   SIDEBAR NAV (real links, active state matches current file)
+========================================================= */
+const sidebarNav = document.getElementById("sidebarNav");
+sidebarNav.style.display = "contents";
+sidebarItems.forEach(item => {
+  const a = document.createElement("a");
+  const isActive = item.href.toLowerCase() === currentPage;
+  a.className = "nav-item" + (isActive ? " active" : "");
+  a.href = item.href;
+  a.title = item.label;
+  a.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
+  sidebarNav.appendChild(a);
+});
+
+/* SIDEBAR TOGGLE (click logo to expand/collapse, doesn't navigate) */
+const sidebar = document.getElementById("sidebar");
+const sidebarToggle = document.getElementById("sidebarToggle");
+sidebarToggle.addEventListener("click", () => {
+  sidebar.classList.toggle("expanded");
+});
+
+/* FILTERS HEAD ICON */
+document.getElementById("filtersHead").innerHTML = `${ICON.filter}<span>Filters</span>`;
+
+/* SUPPORT / MANUAL LINKS */
+document.getElementById("linksList").innerHTML = `
+  <a href="#">${ICON.lifebuoy} Support</a>
+  <a href="#">${ICON.book} User Manual</a>
+`;
+
+/* =========================================================
+   KPI RENDERING
+========================================================= */
+function renderKPIs(){
+  const factor = doctorFactor[filterState.doctor] * genderFactor[filterState.gender] * ageFactor[filterState.age];
+  const kpiRow = document.getElementById("kpiRow");
+  kpiRow.innerHTML = "";
+  kpis.forEach(k => {
+    const displayVal = Math.max(1, Math.round(k.base * factor));
+    const div = document.createElement("div");
+    div.className = "card kpi-card";
+    div.innerHTML = `
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${displayVal.toLocaleString('en-IN')}</div>
+      <div class="kpi-trend-row">
+        <span class="kpi-trend ${k.up ? "up" : "down"}">${k.up ? ICON.trendUp : ICON.trendDown} ${k.trend}</span>
+        <span class="kpi-sub">${k.sub}</span>
+      </div>
+    `;
+    kpiRow.appendChild(div);
+  });
+}
+
+/* =========================================================
+   FILTER FIELDS: custom dropdowns
+========================================================= */
+const filterFields = document.getElementById("filterFields");
+
+function closeAllDropdowns(except){
+  document.querySelectorAll(".filter-dropdown").forEach(dd => {
+    if (dd !== except) dd.classList.remove("show");
+  });
+  document.querySelectorAll(".filter-select").forEach(sel => {
+    if (sel.nextElementSibling !== except) sel.classList.remove("open");
+  });
+}
+
+filters.forEach(f => {
+  const field = document.createElement("div");
+  field.className = "filter-field";
+
+  const select = document.createElement("div");
+  select.className = "filter-select";
+  select.innerHTML = `<span>${filterState[f.key]}</span>${ICON.chevron}`;
+
+  const dropdown = document.createElement("div");
+  dropdown.className = "filter-dropdown";
+  f.options.forEach(opt => {
+    const optEl = document.createElement("div");
+    optEl.className = "filter-option" + (opt === filterState[f.key] ? " selected" : "");
+    optEl.textContent = opt;
+    optEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      filterState[f.key] = opt;
+      select.querySelector("span").textContent = opt;
+      dropdown.querySelectorAll(".filter-option").forEach(o => o.classList.remove("selected"));
+      optEl.classList.add("selected");
+      dropdown.classList.remove("show");
+      select.classList.remove("open");
+    });
+    dropdown.appendChild(optEl);
+  });
+
+  select.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.classList.contains("show");
+    closeAllDropdowns();
+    if (!isOpen){
+      dropdown.classList.add("show");
+      select.classList.add("open");
+    }
+  });
+
+  const label = document.createElement("div");
+  label.className = "filter-label";
+  label.textContent = f.label;
+
+  field.appendChild(label);
+  field.appendChild(select);
+  field.appendChild(dropdown);
+  filterFields.appendChild(field);
+});
+
+document.addEventListener("click", () => closeAllDropdowns());
+
+/* =========================================================
+   APPLY / RESET
+========================================================= */
+const filterStatusEl = document.getElementById("filterStatus");
+
+function activeFilterSummary(){
+  const active = filters.filter(f => filterState[f.key] !== f.options[0]);
+  if (active.length === 0) return "Showing all data (no filters applied).";
+  return "Filtered by " + active.map(f => `${f.label.toLowerCase()}: ${filterState[f.key]}`).join(", ") + ".";
+}
+
+function applyFilters(){
+  renderKPIs();
+
+  // Line chart: filter by month, and dim/hide series by visit type
+  const lineData = filterState.month === "All"
+    ? visitData
+    : visitData.filter(d => d.m === filterState.month);
+  drawLineChart(lineData.length ? lineData : visitData, filterState.visitType);
+
+  // Bar chart: filter by vaccination status
+  const barData = filterState.vaccStatus === "All"
+    ? vaccineData
+    : vaccineData.filter(d => d.status === filterState.vaccStatus);
+  drawBarChart(barData);
+
+  filterStatusEl.textContent = activeFilterSummary();
+}
+
+function resetFilters(){
+  filters.forEach(f => filterState[f.key] = f.options[0]);
+  // repaint each select's label + selected option
+  document.querySelectorAll(".filter-field").forEach((field, i) => {
+    const f = filters[i];
+    field.querySelector(".filter-select span").textContent = f.options[0];
+    field.querySelectorAll(".filter-option").forEach(o => {
+      o.classList.toggle("selected", o.textContent === f.options[0]);
+    });
+  });
+  applyFilters();
+}
+
+document.getElementById("applyBtn").addEventListener("click", applyFilters);
+document.getElementById("resetBtn").addEventListener("click", resetFilters);
+
+/* =========================================================
+   LINE CHART (Patient Visits) — redrawable
+========================================================= */
+function drawLineChart(data, visitType){
+  const svg = document.getElementById("lineChart");
+  const tooltip = document.getElementById("lineTooltip");
+  const W = 760, H = 240, padL = 30, padR = 10, padT = 10, padB = 24;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const showA = visitType === "All" || visitType === "Appointments";
+  const showV = visitType === "All" || visitType === "Vaccinations";
+
+  // legend dimming
+  document.querySelectorAll('#lineLegend span').forEach(el => {
+    const key = el.getAttribute('data-key');
+    const visible = (key === 'a' && showA) || (key === 'v' && showV);
+    el.classList.toggle('dim', !visible);
+  });
+
+  if (!data.length){
+    svg.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle" class="axis-label">No data for this filter</text>`;
+    tooltip.style.display = "none";
+    return;
+  }
+
+  const relevantVals = data.flatMap(d => [showA ? d.a : 0, showV ? d.v : 0]);
+  const maxVal = Math.max(...relevantVals, 1) * 1.15;
+  const stepX = data.length > 1 ? plotW / (data.length - 1) : 0;
+  const singlePoint = data.length === 1;
+
+  const xy = (i, val) => {
+    const x = singlePoint ? padL + plotW / 2 : padL + i * stepX;
+    const y = padT + plotH - (val / maxVal) * plotH;
+    return [x, y];
+  };
+
+  let svgHTML = "";
+
+  const gridCount = 4;
+  for (let g = 0; g <= gridCount; g++) {
+    const y = padT + (plotH / gridCount) * g;
+    svgHTML += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" class="grid-line"/>`;
+  }
+
+  data.forEach((d, i) => {
+    const [x] = xy(i, 0);
+    svgHTML += `<text x="${x}" y="${H - 4}" text-anchor="middle" class="axis-label">${d.m}</text>`;
+  });
+
+  const buildPath = (key) => data.map((d, i) => {
+    const [x, y] = xy(i, d[key]);
+    return (i === 0 ? "M" : "L") + x.toFixed(1) + " " + y.toFixed(1);
+  }).join(" ");
+
+  const dots = (key, color) => data.map((d, i) => {
+    const [x, y] = xy(i, d[key]);
+    return `<circle class="pt" data-key="${key}" data-i="${i}" cx="${x}" cy="${y}" r="3.5" fill="${color}" style="cursor:pointer"/>`;
+  }).join("");
+
+  if (showA && !singlePoint) svgHTML += `<path d="${buildPath('a')}" fill="none" stroke="var(--primary)" stroke-width="2.5"/>`;
+  if (showV && !singlePoint) svgHTML += `<path d="${buildPath('v')}" fill="none" stroke="var(--secondary)" stroke-width="2.5"/>`;
+  if (showA) svgHTML += dots('a', '#6C63FF');
+  if (showV) svgHTML += dots('v', '#4F8EF7');
+
+  svg.innerHTML = svgHTML;
+
+  svg.querySelectorAll(".pt").forEach(pt => {
+    pt.addEventListener("mousemove", (e) => {
+      const i = pt.getAttribute("data-i");
+      const key = pt.getAttribute("data-key");
+      const d = data[i];
+      const label = key === "a" ? "Appointments" : "Vaccinations";
+      tooltip.style.display = "block";
+      tooltip.style.left = e.offsetX + 12 + "px";
+      tooltip.style.top = e.offsetY - 10 + "px";
+      tooltip.innerHTML = `<strong>${d.m}</strong><br>${label}: ${d[key]}`;
+    });
+    pt.addEventListener("mouseleave", () => tooltip.style.display = "none");
+  });
+}
+
+/* =========================================================
+   BAR CHART (Monthly Vaccinations) — redrawable
+========================================================= */
+function drawBarChart(data){
+  const svg = document.getElementById("barChart");
+  const tooltip = document.getElementById("barTooltip");
+  const W = 360, H = 220, padL = 28, padR = 8, padT = 10, padB = 24;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  if (!data.length){
+    svg.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle" class="axis-label">No vaccines match this filter</text>`;
+    tooltip.style.display = "none";
+    return;
+  }
+
+  const maxVal = Math.max(...data.map(d => d.value)) * 1.2;
+  const n = data.length;
+  const gap = 10;
+  const barW = (plotW - gap * (n - 1)) / n;
+
+  let svgHTML = "";
+  const gridCount = 4;
+  for (let g = 0; g <= gridCount; g++) {
+    const y = padT + (plotH / gridCount) * g;
+    svgHTML += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" class="grid-line"/>`;
+  }
+
+  const points = [];
+  data.forEach((d, i) => {
+    const x = padL + i * (barW + gap);
+    const barH = (d.value / maxVal) * plotH;
+    const y = padT + plotH - barH;
+    svgHTML += `<rect class="bar" data-i="${i}" x="${x}" y="${y}" width="${barW}" height="${barH}" rx="6" fill="var(--accent)" style="cursor:pointer"/>`;
+    svgHTML += `<text x="${x + barW/2}" y="${H - 4}" text-anchor="middle" class="axis-label">${d.name}</text>`;
+    points.push([x + barW/2, y]);
+  });
+
+  const linePath = points.map((p, i) => (i === 0 ? "M" : "L") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  svgHTML += `<path d="${linePath}" fill="none" stroke="var(--text)" stroke-width="1.5"/>`;
+  points.forEach(p => {
+    svgHTML += `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="var(--text)"/>`;
+  });
+
+  svg.innerHTML = svgHTML;
+
+  svg.querySelectorAll(".bar").forEach(bar => {
+    bar.addEventListener("mousemove", (e) => {
+      const i = bar.getAttribute("data-i");
+      const d = data[i];
+      tooltip.style.display = "block";
+      tooltip.style.left = e.offsetX + 12 + "px";
+      tooltip.style.top = e.offsetY - 10 + "px";
+      tooltip.innerHTML = `<strong>${d.name}</strong><br>Doses: ${d.value}<br>Status: ${d.status}`;
+    });
+    bar.addEventListener("mouseleave", () => tooltip.style.display = "none");
+  });
+}
+
+/* =========================================================
+   INITIAL RENDER
+========================================================= */
+renderKPIs();
+drawLineChart(visitData, "All");
+drawBarChart(vaccineData);
+filterStatusEl.textContent = activeFilterSummary();
+</script>
+</body>
+</html>
