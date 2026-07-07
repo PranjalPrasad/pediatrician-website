@@ -409,7 +409,7 @@
 </div>
 
 <script>
-  protectPage();
+  // protectPage();
 /* =========================================================
    ICONS
 ========================================================= */
@@ -489,12 +489,10 @@ sidebarItems.forEach(item => {
     btn.className = "nav-item";
     btn.title = item.label;
     btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-    btn.addEventListener("click", () => { 
-        if (item.action === "logout") logout(); 
-    });
+    btn.addEventListener("click", () => { if (item.action === "logout") window.location.href = "login.html"; });
     sidebarNav.appendChild(btn);
     return;
-}
+  }
   const childActive = item.children.some(c => c.href.toLowerCase() === currentPage);
   const group = document.createElement("div");
   group.className = "nav-group" + (childActive ? " open" : "");

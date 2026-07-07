@@ -1,4 +1,4 @@
-protectPage();
+// protectPage();
 
 /* =========================================================
    ICON LIBRARY (same set used across the dashboard)

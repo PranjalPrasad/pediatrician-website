@@ -1,4 +1,4 @@
-protectPage();
+// protectPage();
 
 /* =========================================================
    ICON LIBRARY (same hand-drawn stroke set as the dashboard)
