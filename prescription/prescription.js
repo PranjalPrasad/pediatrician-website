@@ -24,7 +24,10 @@ const ICON = {
   pill: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5L3.5 13.5a5 5 0 117-7l7 7a5 5 0 01-7 7z"/><path d="M8.5 8.5l7 7"/></svg>`,
   plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
   printer: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 14h12v8H6z"/></svg>`,
-  logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>`
+  logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>`,
+  whatsapp: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>`,
+  link: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1.5-1.5"/></svg>`,
+  download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>`
 };
 
 /* =========================================================
@@ -45,7 +48,6 @@ const sidebarItems = [
   { type: "link",  icon: ICON.file,        label: "Reports",           href: "reports.html" },
   { type: "link",  icon: ICON.receipt,     label: "Billing",           href: "billing.html" },
   { type: "link",  icon: ICON.userPlus,    label: "User Management",   href: "user.html" },
-  { type: "link",  icon: ICON.settings,    label: "Settings",          href: "settings.html" },
   { type: "action", icon: ICON.logout,      label: "Logout",            action: "logout" }
 ];
 
@@ -114,6 +116,17 @@ document.getElementById("headerMeta").innerHTML = `
 `;
 
 /* =========================================================
+   CLINIC INFO (used across print / PDF / WhatsApp / invoice)
+========================================================= */
+const CLINIC = {
+  name: "Sunshine Pediatric Clinic",
+  address: "123 MG Road, Pune, Maharashtra",
+  phone: "+91 98220 00000",
+  doctorName: "Dr. Ananya Sharma",
+  doctorSub: "MBBS, MD (Pediatrics) · Reg. No. MH-24681"
+};
+
+/* =========================================================
    MOCK DATA
 ========================================================= */
 const patients = [
@@ -133,13 +146,15 @@ let prescriptions = [
     medicines: [
       { name: "Paracetamol Syrup", m: true,  a: false, n: true,  duration: "3 days", food: "After Food", instruction: "5 ml, if fever above 100°F" },
       { name: "Cough Syrup",       m: false, a: true,  n: true,  duration: "5 days", food: "After Food", instruction: "5 ml twice daily" }
-    ]
+    ],
+    invoice: null
   },
   {
     id: 2, patientId: "PC-1044", date: "2026-07-01",
     medicines: [
       { name: "Cetirizine Drops", m: true, a: false, n: false, duration: "7 days", food: "After Food", instruction: "10 drops once daily" }
-    ]
+    ],
+    invoice: null
   }
 ];
 let nextRxId = prescriptions.length + 1;
@@ -147,6 +162,7 @@ let nextRxId = prescriptions.length + 1;
 let selectedPatient = null;
 let currentMeds = [];
 let nextRowId = 1;
+let currentInvoice = null; /* set once "Generate Invoice" is clicked */
 
 /* =========================================================
    KPI CARDS
@@ -211,6 +227,14 @@ function formatDate(iso){
   const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
+function formatCurrency(n){
+  return "₹" + Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/* digits-only phone number for wa.me (assumes Indian country code already present, e.g. +91 98765 43210) */
+function toWhatsappNumber(phone){
+  return phone.replace(/[^\d]/g, "");
+}
 
 function selectPatient(p){
   selectedPatient = p;
@@ -218,9 +242,13 @@ function selectPatient(p){
   renderPatientSummary();
   document.getElementById("rxSection").style.display = "block";
   currentMeds = [];
+  currentInvoice = null;
+  document.getElementById("invoiceBreakdown").innerHTML = "";
+  document.getElementById("feeMedicine").value = 0;
   addMedicineRow();
   renderRxTable();
   renderRxHistory();
+  updateInvoiceActionState();
 }
 
 function renderPatientSummary(){
@@ -328,43 +356,20 @@ rxTableBody.addEventListener("click", (e) => {
 
 document.getElementById("addMedicineBtn").addEventListener("click", addMedicineRow);
 
+/* recompute a sensible default medicine charge whenever meds change (editable by the user) */
+function suggestMedicineCharge(){
+  const count = getValidMeds().length;
+  return count * 150;
+}
+
 /* =========================================================
-   SAVE / PRINT
+   SAVE
 ========================================================= */
 const rxError = document.getElementById("rxError");
 
 function getValidMeds(){
   return currentMeds.filter(r => r.name.trim());
 }
-
-document.getElementById("saveRxBtn").addEventListener("click", () => {
-  rxError.textContent = "";
-  if (!selectedPatient){ rxError.textContent = "Please select a patient first."; return; }
-  const meds = getValidMeds();
-  if (!meds.length){ rxError.textContent = "Please add at least one medicine with a name."; return; }
-
-  prescriptions.unshift({
-    id: nextRxId++,
-    patientId: selectedPatient.id,
-    date: "2026-07-07",
-    medicines: meds.map(m => ({ ...m }))
-  });
-
-  renderKPIs();
-  renderRxHistory();
-  showToast(`Prescription saved for ${selectedPatient.name}`);
-  currentMeds = [];
-  addMedicineRow();
-});
-
-document.getElementById("printRxBtn").addEventListener("click", () => {
-  rxError.textContent = "";
-  if (!selectedPatient){ rxError.textContent = "Please select a patient first."; return; }
-  const meds = getValidMeds();
-  if (!meds.length){ rxError.textContent = "Please add at least one medicine before printing."; return; }
-  buildPrintArea(selectedPatient, "2026-07-07", meds);
-  window.print();
-});
 
 function doseLabel(m){
   const parts = [];
@@ -374,18 +379,100 @@ function doseLabel(m){
   return parts.length ? parts.join(" · ") : "As directed";
 }
 
-function buildPrintArea(patient, date, meds){
-  const area = document.getElementById("printArea");
-  area.innerHTML = `
+document.getElementById("saveRxBtn").addEventListener("click", () => {
+  rxError.textContent = "";
+  if (!selectedPatient){ rxError.textContent = "Please select a patient first."; return; }
+  const meds = getValidMeds();
+  if (!meds.length){ rxError.textContent = "Please add at least one medicine with a name."; return; }
+
+  const feeMedicineInput = document.getElementById("feeMedicine");
+  if (!Number(feeMedicineInput.value)) feeMedicineInput.value = suggestMedicineCharge();
+
+  const savedRx = {
+    id: nextRxId++,
+    patientId: selectedPatient.id,
+    date: "2026-07-07",
+    medicines: meds.map(m => ({ ...m })),
+    invoice: null
+  };
+  prescriptions.unshift(savedRx);
+
+  renderKPIs();
+  renderRxHistory();
+  showToast(`Prescription saved for ${selectedPatient.name}`);
+  updateInvoiceActionState();
+});
+
+/* =========================================================
+   INVOICE
+========================================================= */
+function computeInvoice(){
+  const consultation = Number(document.getElementById("feeConsultation").value) || 0;
+  const medicine = Number(document.getElementById("feeMedicine").value) || 0;
+  const discountPct = Number(document.getElementById("feeDiscount").value) || 0;
+  const gstPct = Number(document.getElementById("feeGst").value) || 0;
+
+  const subtotal = consultation + medicine;
+  const discountAmt = subtotal * (discountPct / 100);
+  const afterDiscount = subtotal - discountAmt;
+  const gstAmt = afterDiscount * (gstPct / 100);
+  const grandTotal = afterDiscount + gstAmt;
+
+  return { consultation, medicine, discountPct, discountAmt, gstPct, gstAmt, subtotal, grandTotal };
+}
+
+function renderInvoiceBreakdown(inv){
+  document.getElementById("invoiceBreakdown").innerHTML = `
+    <div class="invoice-breakdown">
+      <div class="invoice-row"><span>Consultation Fee</span><span class="invoice-value">${formatCurrency(inv.consultation)}</span></div>
+      <div class="invoice-row"><span>Medicine Charges</span><span class="invoice-value">${formatCurrency(inv.medicine)}</span></div>
+      <div class="invoice-row muted"><span>Subtotal</span><span class="invoice-value">${formatCurrency(inv.subtotal)}</span></div>
+      <div class="invoice-row discount"><span>Discount (${inv.discountPct}%)</span><span class="invoice-value">- ${formatCurrency(inv.discountAmt)}</span></div>
+      <div class="invoice-row muted"><span>GST (${inv.gstPct}%)</span><span class="invoice-value">+ ${formatCurrency(inv.gstAmt)}</span></div>
+      <div class="invoice-row total"><span>Grand Total</span><span class="invoice-value">${formatCurrency(inv.grandTotal)}</span></div>
+    </div>
+  `;
+}
+
+function updateInvoiceActionState(){
+  const hasMeds = getValidMeds().length > 0;
+  const ready = !!selectedPatient && hasMeds && !!currentInvoice;
+  ["printRxBtn", "downloadPdfBtn", "generateLinkBtn", "sendWhatsappBtn"].forEach(id => {
+    document.getElementById(id).disabled = !ready;
+  });
+}
+updateInvoiceActionState();
+
+document.getElementById("generateInvoiceBtn").addEventListener("click", () => {
+  const invoiceError = document.getElementById("invoiceError");
+  invoiceError.textContent = "";
+  if (!selectedPatient){ invoiceError.textContent = "Please select a patient first."; return; }
+  const meds = getValidMeds();
+  if (!meds.length){ invoiceError.textContent = "Please add at least one medicine before generating an invoice."; return; }
+
+  const feeMedicineInput = document.getElementById("feeMedicine");
+  if (!Number(feeMedicineInput.value)) feeMedicineInput.value = suggestMedicineCharge();
+
+  currentInvoice = computeInvoice();
+  renderInvoiceBreakdown(currentInvoice);
+  updateInvoiceActionState();
+  showToast("Invoice generated");
+});
+
+/* =========================================================
+   BUILD PRINT / PDF CONTENT
+========================================================= */
+function buildRxDocumentHTML(patient, date, meds, invoice){
+  return `
     <div class="rx-print-sheet">
       <div class="rx-print-head">
         <div>
-          <div class="rx-clinic-name">Sunshine Pediatric Clinic</div>
-          <div class="rx-clinic-sub">123 MG Road, Pune, Maharashtra &middot; +91 98220 00000</div>
+          <div class="rx-clinic-name">${CLINIC.name}</div>
+          <div class="rx-clinic-sub">${CLINIC.address} &middot; ${CLINIC.phone}</div>
         </div>
         <div>
-          <div class="rx-doc-name">Dr. Ananya Sharma</div>
-          <div class="rx-doc-sub">MBBS, MD (Pediatrics) &middot; Reg. No. MH-24681</div>
+          <div class="rx-doc-name">${CLINIC.doctorName}</div>
+          <div class="rx-doc-sub">${CLINIC.doctorSub}</div>
         </div>
       </div>
       <div class="rx-patient-row">
@@ -410,9 +497,292 @@ function buildPrintArea(patient, date, meds){
           `).join("")}
         </tbody>
       </table>
+      ${invoice ? `
+      <div class="rx-print-invoice">
+        <div class="invoice-row"><span>Consultation Fee</span><span>${formatCurrency(invoice.consultation)}</span></div>
+        <div class="invoice-row"><span>Medicine Charges</span><span>${formatCurrency(invoice.medicine)}</span></div>
+        <div class="invoice-row"><span>Discount (${invoice.discountPct}%)</span><span>- ${formatCurrency(invoice.discountAmt)}</span></div>
+        <div class="invoice-row"><span>GST (${invoice.gstPct}%)</span><span>+ ${formatCurrency(invoice.gstAmt)}</span></div>
+        <div class="invoice-row total"><span>Grand Total</span><span>${formatCurrency(invoice.grandTotal)}</span></div>
+      </div>` : ""}
       <div class="rx-print-footer">Generated via Pediatric Clinic Management System &middot; Please follow the dosage as prescribed.</div>
     </div>
   `;
+}
+
+/* =========================================================
+   PRINT (prescription + invoice)
+========================================================= */
+document.getElementById("printRxBtn").addEventListener("click", () => {
+  if (!selectedPatient || !currentInvoice) return;
+  const meds = getValidMeds();
+  if (!meds.length) return;
+  document.getElementById("printArea").innerHTML = buildRxDocumentHTML(selectedPatient, "2026-07-07", meds, currentInvoice);
+  window.print();
+});
+
+/* =========================================================
+   DOWNLOAD PDF (uses jsPDF, loaded via CDN in prescription.html)
+========================================================= */
+document.getElementById("downloadPdfBtn").addEventListener("click", () => {
+  if (!selectedPatient || !currentInvoice) return;
+  const meds = getValidMeds();
+  if (!meds.length) return;
+
+  if (!window.jspdf){
+    showToast("PDF library failed to load. Check your internet connection.");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+  const margin = 40;
+  let y = margin;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.setTextColor(108, 99, 255);
+  doc.text(CLINIC.name, margin, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(139, 133, 166);
+  y += 14;
+  doc.text(`${CLINIC.address}  |  ${CLINIC.phone}`, margin, y);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(36, 30, 61);
+  doc.text(CLINIC.doctorName, 400, margin);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(139, 133, 166);
+  doc.text(CLINIC.doctorSub, 400, margin + 14);
+
+  y += 20;
+  doc.setDrawColor(108, 99, 255);
+  doc.setLineWidth(1.2);
+  doc.line(margin, y, 555, y);
+  y += 24;
+
+  doc.setFontSize(10);
+  doc.setTextColor(36, 30, 61);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Patient: ${selectedPatient.name} (${selectedPatient.id})`, margin, y);
+  y += 14;
+  doc.setFont("helvetica", "normal");
+  doc.text(`Age: ${selectedPatient.age}   Weight: ${selectedPatient.weight}   Date: ${formatDate("2026-07-07")}`, margin, y);
+  y += 24;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Prescription", margin, y);
+  y += 16;
+
+  const colX = [margin, margin + 150, margin + 260, margin + 340, margin + 410];
+  doc.setFontSize(9);
+  doc.setTextColor(139, 133, 166);
+  doc.text("Medicine", colX[0], y);
+  doc.text("Dosage", colX[1], y);
+  doc.text("Duration", colX[2], y);
+  doc.text("Food", colX[3], y);
+  doc.text("Instruction", colX[4], y);
+  y += 6;
+  doc.setDrawColor(236, 232, 249);
+  doc.line(margin, y, 555, y);
+  y += 14;
+
+  doc.setTextColor(36, 30, 61);
+  meds.forEach(m => {
+    doc.text(m.name.substring(0, 22), colX[0], y);
+    doc.text(doseLabel(m), colX[1], y);
+    doc.text(m.duration || "—", colX[2], y);
+    doc.text(m.food, colX[3], y);
+    doc.text((m.instruction || "—").substring(0, 24), colX[4], y);
+    y += 16;
+  });
+
+  y += 10;
+  doc.setDrawColor(236, 232, 249);
+  doc.line(margin, y, 555, y);
+  y += 20;
+
+  doc.setFont("helvetica", "bold");
+  doc.text("Invoice", margin, y);
+  y += 16;
+  doc.setFont("helvetica", "normal");
+
+  const inv = currentInvoice;
+  const invoiceLines = [
+    ["Consultation Fee", formatCurrency(inv.consultation)],
+    ["Medicine Charges", formatCurrency(inv.medicine)],
+    [`Discount (${inv.discountPct}%)`, "- " + formatCurrency(inv.discountAmt)],
+    [`GST (${inv.gstPct}%)`, "+ " + formatCurrency(inv.gstAmt)]
+  ];
+  invoiceLines.forEach(([label, value]) => {
+    doc.text(label, margin, y);
+    doc.text(value, 470, y);
+    y += 15;
+  });
+
+  y += 4;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(108, 99, 255);
+  doc.text("Grand Total", margin, y);
+  doc.text(formatCurrency(inv.grandTotal), 470, y);
+
+  y += 30;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(139, 133, 166);
+  doc.text("Generated via Pediatric Clinic Management System. Please follow the dosage as prescribed.", margin, y);
+
+  const fileName = `Prescription_${selectedPatient.id}_2026-07-07.pdf`;
+  doc.save(fileName);
+  showToast("Prescription PDF downloaded");
+});
+
+/* =========================================================
+   SHAREABLE LINK
+   Since this is a static front-end page (no backend/database),
+   the prescription + invoice data is packed into the URL itself
+   as base64 JSON, and read back by view-prescription.html.
+========================================================= */
+function buildSharePayload(){
+  return {
+    clinic: CLINIC,
+    patient: {
+      name: selectedPatient.name, id: selectedPatient.id, age: selectedPatient.age,
+      parent: selectedPatient.parent, phone: selectedPatient.phone, weight: selectedPatient.weight
+    },
+    date: "2026-07-07",
+    medicines: getValidMeds().map(m => ({ ...m })),
+    invoice: currentInvoice
+  };
+}
+
+function buildShareLink(){
+  const payload = buildSharePayload();
+  const encoded = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(payload)))));
+  const base = location.href.replace(/[^/]*$/, ""); /* current folder */
+  return `${base}view-prescription.html?data=${encoded}`;
+}
+
+document.getElementById("generateLinkBtn").addEventListener("click", () => {
+  if (!selectedPatient || !currentInvoice) return;
+  const link = buildShareLink();
+  openLinkModal(link);
+});
+
+function openLinkModal(link){
+  modalCard.className = "modal-card";
+  modalCard.innerHTML = `
+    <div class="modal-head">
+      <div class="modal-title link"><span class="modal-icon">${ICON.link}</span>Shareable Prescription Link</div>
+      <button class="modal-close" id="modalCloseBtn">${ICON.x}</button>
+    </div>
+    <p class="modal-text">Anyone with this link can view and print this prescription and invoice. The link works as long as it's opened from the same folder as this app (no server database is used).</p>
+    <div class="link-box">
+      <input type="text" id="shareLinkInput" value="${link}" readonly>
+      <button type="button" id="copyLinkBtn">Copy</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modalDoneBtn">Close</button>
+      <button class="btn btn-whatsapp" id="linkToWhatsappBtn">${ICON.whatsapp} Share on WhatsApp</button>
+    </div>
+  `;
+  modalOverlay.classList.add("show");
+  document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+  document.getElementById("modalDoneBtn").addEventListener("click", closeModal);
+  document.getElementById("copyLinkBtn").addEventListener("click", () => {
+    const input = document.getElementById("shareLinkInput");
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => showToast("Link copied to clipboard"))
+      .catch(() => { document.execCommand("copy"); showToast("Link copied to clipboard"); });
+  });
+  document.getElementById("linkToWhatsappBtn").addEventListener("click", () => {
+    closeModal();
+    sendPrescriptionOnWhatsapp(link);
+  });
+}
+
+/* =========================================================
+   WHATSAPP MESSAGE
+   Builds a full text summary of the prescription + invoice and
+   opens WhatsApp (wa.me) pre-filled with it, addressed to the
+   patient's registered mobile number. The user taps Send inside
+   WhatsApp — actual sending always requires that final tap
+   because there is no backend / WhatsApp Business API here.
+========================================================= */
+function buildWhatsappMessage(link){
+  const p = selectedPatient;
+  const meds = getValidMeds();
+  const inv = currentInvoice;
+
+  const medLines = meds.map((m, i) =>
+    `${i + 1}. ${m.name} — ${doseLabel(m)}, ${m.duration || "—"}, ${m.food}${m.instruction ? " (" + m.instruction + ")" : ""}`
+  ).join("\n");
+
+  const invoiceLines =
+`Consultation Fee: ${formatCurrency(inv.consultation)}
+Medicine Charges: ${formatCurrency(inv.medicine)}
+Discount (${inv.discountPct}%): -${formatCurrency(inv.discountAmt)}
+GST (${inv.gstPct}%): +${formatCurrency(inv.gstAmt)}
+*Grand Total: ${formatCurrency(inv.grandTotal)}*`;
+
+  return `*${CLINIC.name}*
+${CLINIC.address}
+
+*Prescription for ${p.name} (${p.id})*
+Date: ${formatDate("2026-07-07")}
+Doctor: ${CLINIC.doctorName}
+
+*Medicines:*
+${medLines}
+
+*Invoice:*
+${invoiceLines}
+
+View / print full prescription: ${link}
+
+_This message was sent from the Pediatric Clinic Management System._`;
+}
+
+function sendPrescriptionOnWhatsapp(existingLink){
+  if (!selectedPatient || !currentInvoice) return;
+  const meds = getValidMeds();
+  if (!meds.length) return;
+
+  const link = existingLink || buildShareLink();
+  const message = buildWhatsappMessage(link);
+  const waNumber = toWhatsappNumber(selectedPatient.phone);
+  const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+
+  openWhatsappPreviewModal(message, waUrl);
+}
+
+document.getElementById("sendWhatsappBtn").addEventListener("click", () => sendPrescriptionOnWhatsapp());
+
+function openWhatsappPreviewModal(message, waUrl){
+  modalCard.className = "modal-card wide";
+  modalCard.innerHTML = `
+    <div class="modal-head">
+      <div class="modal-title whatsapp"><span class="modal-icon">${ICON.whatsapp}</span>Send on WhatsApp</div>
+      <button class="modal-close" id="modalCloseBtn">${ICON.x}</button>
+    </div>
+    <p class="modal-text">This will open WhatsApp with the message below, pre-addressed to <strong>${selectedPatient.phone}</strong>. Tap send inside WhatsApp to deliver it.</p>
+    <div class="wa-preview">${message.replace(/</g, "&lt;")}</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modalCancelBtn">Cancel</button>
+      <a class="btn btn-whatsapp" href="${waUrl}" target="_blank" rel="noopener" id="openWhatsappLink">${ICON.whatsapp} Open WhatsApp</a>
+    </div>
+  `;
+  modalOverlay.classList.add("show");
+  document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+  document.getElementById("modalCancelBtn").addEventListener("click", closeModal);
+  document.getElementById("openWhatsappLink").addEventListener("click", () => {
+    setTimeout(closeModal, 300);
+    showToast("Opening WhatsApp...");
+  });
 }
 
 /* =========================================================
@@ -463,7 +833,7 @@ document.getElementById("rxHistory").addEventListener("click", (e) => {
 });
 
 /* =========================================================
-   MODAL OVERLAY — View / Edit / Delete
+   MODAL OVERLAY — View / Edit / Delete / Link / WhatsApp
 ========================================================= */
 const modalOverlay = document.getElementById("modalOverlay");
 const modalCard = document.getElementById("modalCard");
@@ -471,10 +841,12 @@ const modalCard = document.getElementById("modalCard");
 function closeModal(){
   modalOverlay.classList.remove("show");
   modalCard.innerHTML = "";
+  modalCard.className = "modal-card";
 }
 modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(); });
 
 function openViewModal(p){
+  modalCard.className = "modal-card";
   modalCard.innerHTML = `
     <div class="modal-head">
       <div class="modal-title"><span class="modal-icon">${ICON.eye}</span>Prescription Details</div>
@@ -495,6 +867,7 @@ function openViewModal(p){
 }
 
 function openEditModal(p){
+  modalCard.className = "modal-card";
   modalCard.innerHTML = `
     <div class="modal-head">
       <div class="modal-title"><span class="modal-icon">${ICON.edit}</span>Edit Prescription</div>
@@ -536,6 +909,7 @@ function openEditModal(p){
 }
 
 function openDeleteModal(p){
+  modalCard.className = "modal-card";
   modalCard.innerHTML = `
     <div class="modal-head">
       <div class="modal-title danger"><span class="modal-icon">${ICON.alertTriangle}</span>Delete Prescription?</div>

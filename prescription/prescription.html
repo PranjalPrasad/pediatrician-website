@@ -6,7 +6,9 @@
 <title>Prescription · Pediatric Clinic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="prescription.css">
+<link rel="stylesheet" href="/prescription/prescription.css">
+<!-- jsPDF: used to generate a real downloadable PDF of the prescription + invoice -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -108,13 +110,69 @@
           <div class="form-error" id="rxError"></div>
 
           <div class="form-actions">
+            <button type="button" class="btn btn-primary" id="saveRxBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>
+              Save Prescription
+            </button>
+          </div>
+        </div>
+
+        <!-- INVOICE -->
+        <div class="card section-card">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h8"/></svg>
+                Invoice
+              </div>
+              <div class="section-subtitle">Generate the consultation invoice for this visit</div>
+            </div>
+          </div>
+
+          <div class="invoice-grid">
+            <div class="form-field">
+              <label class="form-label" for="feeConsultation">Consultation Fee (₹)</label>
+              <input class="form-input" type="number" id="feeConsultation" value="500" min="0">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="feeMedicine">Medicine Charges (₹)</label>
+              <input class="form-input" type="number" id="feeMedicine" value="0" min="0">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="feeDiscount">Discount (%)</label>
+              <input class="form-input" type="number" id="feeDiscount" value="0" min="0" max="100">
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="feeGst">GST (%)</label>
+              <input class="form-input" type="number" id="feeGst" value="5" min="0" max="28">
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-outline" id="generateInvoiceBtn" style="margin-bottom:16px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            Generate Invoice
+          </button>
+
+          <div id="invoiceBreakdown"></div>
+
+          <div class="form-error" id="invoiceError"></div>
+
+          <div class="form-actions">
             <button type="button" class="btn btn-outline" id="printRxBtn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 14h12v8H6z"/></svg>
               Print
             </button>
-            <button type="button" class="btn btn-primary" id="saveRxBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>
-              Save
+            <button type="button" class="btn btn-outline" id="downloadPdfBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 21h16"/></svg>
+              Download PDF
+            </button>
+            <button type="button" class="btn btn-outline" id="generateLinkBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007 0l3-3a5 5 0 00-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 00-7 0l-3 3a5 5 0 007 7l1.5-1.5"/></svg>
+              Generate Link
+            </button>
+            <button type="button" class="btn btn-whatsapp" id="sendWhatsappBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+              Send on WhatsApp
             </button>
           </div>
         </div>
@@ -142,12 +200,12 @@
   <span id="toastMsg"></span>
 </div>
 
-<!-- MODAL OVERLAY (View / Edit / Delete) -->
+<!-- MODAL OVERLAY (View / Edit / Delete / WhatsApp / Link) -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-card" id="modalCard"></div>
 </div>
 
-<!-- HIDDEN PRINT AREA (only visible when printing) -->
+<!-- HIDDEN PRINT AREA (only visible when printing / used for PDF export) -->
 <div id="printArea" style="display:none;"></div>
 
 <script src="/prescription/prescription.js"></script>
