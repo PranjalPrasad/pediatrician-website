@@ -27,17 +27,21 @@ function login(email, password) {
     return false;
 }
 
-// Logout
 function logout() {
+
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(USER_KEY);
-    window.location.href = "login.html";
+
+    sessionStorage.clear();
+
+    window.location.replace("index.html");
+
 }
 
 // Har page ko protect karne ke liye
 function protectPage() {
     if (!isAuthenticated()) {
-        window.location.href = "login.html";
+        window.location.replace("index.html");
     }
 }
 

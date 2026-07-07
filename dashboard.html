@@ -924,9 +924,11 @@ sidebarItems.forEach(item => {
     btn.className = "nav-item";
     btn.title = item.label;
     btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-    btn.addEventListener("click", () => { 
-        if (item.action === "logout") logout(); 
-    });
+   btn.addEventListener("click", () => {
+    if (item.action === "logout") {
+        openLogoutOverlay();
+    }
+});
     sidebarNav.appendChild(btn);
     return;
 }
@@ -1005,7 +1007,12 @@ logoutOverlay.addEventListener("click", (e) => {
 });
 
 document.getElementById("logoutConfirmBtn").addEventListener("click", () => {
-  window.location.href = "login.html";
+
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("clinicUser");
+
+    window.location.replace("index.html");
+
 });
 
 /* =========================================================
