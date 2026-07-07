@@ -436,7 +436,10 @@
         </div>
     </div>
 
+        
     <script>
+
+        protectPage();
         // ---- Dummy credentials (frontend-only auth) ----
         const DUMMY_EMAIL    = 'doctor@clinic.com';
         const DUMMY_PASSWORD = 'clinic@1234';
@@ -701,6 +704,18 @@
             e.preventDefault();
             showLoginError('Contact clinic admin to reset your password');
         });
+
+        // Login form submit ke andar success part mein yeh rakh do
+if (login(email, password)) {
+    showOverlayMessage('', 'success');   // tumhara existing function
+    setTimeout(() => {
+        window.location.href = "dashboard.html";
+    }, 2200);
+} else {
+    // error handling
+}
+
+
     </script>
 </body>
 </html>

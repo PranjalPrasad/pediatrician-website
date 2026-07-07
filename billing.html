@@ -478,6 +478,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
+
+  protectPage();
 /* =========================================================
    ICON LIBRARY
 ========================================================= */
@@ -594,8 +596,9 @@ function openLogoutOverlay(){ logoutOverlay.classList.add("show"); }
 function closeLogoutOverlay(){ logoutOverlay.classList.remove("show"); }
 document.getElementById("logoutCancelBtn").addEventListener("click", closeLogoutOverlay);
 logoutOverlay.addEventListener("click", (e) => { if (e.target === logoutOverlay) closeLogoutOverlay(); });
-document.getElementById("logoutConfirmBtn").addEventListener("click", () => window.location.href = "login.html");
-
+document.getElementById("logoutConfirmBtn").addEventListener("click", () => { 
+    logout(); 
+});
 /* =========================================================
    TOAST
 ========================================================= */
@@ -796,6 +799,8 @@ function renderHistory(){
 renderInvoicePreview();
 renderStatusTabs();
 renderHistory();
+
 </script>
+<script src="/auth.js"></script>
 </body>
 </html>

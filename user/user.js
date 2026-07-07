@@ -1,3 +1,5 @@
+protectPage();
+
 /* =========================================================
    ICON LIBRARY (same style as dashboard — minimal stroke icons)
 ========================================================= */
@@ -527,8 +529,9 @@ const logoutOverlay = document.getElementById("logoutOverlay");
 document.getElementById("logoutIcon").innerHTML = ICON.logout;
 document.getElementById("logoutCancelBtn").addEventListener("click", () => closeOverlay(logoutOverlay));
 logoutOverlay.addEventListener("click", (e) => { if (e.target === logoutOverlay) closeOverlay(logoutOverlay); });
-document.getElementById("logoutConfirmBtn").addEventListener("click", () => { window.location.href = "login.html"; });
-
+document.getElementById("logoutConfirmBtn").addEventListener("click", () => { 
+    logout(); 
+});
 /* =========================================================
    INITIAL RENDER
 ========================================================= */

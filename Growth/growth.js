@@ -1,3 +1,4 @@
+protectPage();
 /* =========================================================
    ICONS
 ========================================================= */
@@ -70,16 +71,18 @@ sidebarItems.forEach(item => {
     sidebarNav.appendChild(a);
     return;
   }
-  if (item.type === "action") {
+ if (item.type === "action") {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "nav-item";
     btn.title = item.label;
     btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-    btn.addEventListener("click", () => { if (item.action === "logout") window.location.href = "login.html"; });
+    btn.addEventListener("click", () => { 
+        if (item.action === "logout") logout(); 
+    });
     sidebarNav.appendChild(btn);
     return;
-  }
+}
   const childActive = item.children.some(c => c.href.toLowerCase() === currentPage);
   const group = document.createElement("div");
   group.className = "nav-group" + (childActive ? " open" : "");

@@ -768,6 +768,8 @@
 </div>
 
 <script>
+
+  protectPage();
 /* =========================================================
    ICON LIBRARY (minimal hand-drawn stroke icons, lucide-like)
 ========================================================= */
@@ -920,12 +922,12 @@ sidebarItems.forEach(item => {
     btn.className = "nav-item";
     btn.title = item.label;
     btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-    btn.addEventListener("click", () => {
-      if (item.action === "logout") openLogoutOverlay();
+    btn.addEventListener("click", () => { 
+        if (item.action === "logout") logout(); 
     });
     sidebarNav.appendChild(btn);
     return;
-  }
+}
 
   // group (Children -> All Children / Register Child)
   const childActive = item.children.some(c => c.href.toLowerCase() === currentPage);
@@ -1340,5 +1342,6 @@ drawBarChart(vaccineData);
 drawPieChart(stateData);
 filterStatusEl.textContent = activeFilterSummary();
 </script>
+<script src="/auth.js"></script>
 </body>
 </html>

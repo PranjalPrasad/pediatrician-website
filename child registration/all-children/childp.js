@@ -1,3 +1,5 @@
+protectPage();
+
 /* =========================================================
    ICON LIBRARY (same set used across the dashboard)
 ========================================================= */
@@ -111,7 +113,9 @@ function openLogoutOverlay(){ logoutOverlay.classList.add("show"); }
 function closeLogoutOverlay(){ logoutOverlay.classList.remove("show"); }
 document.getElementById("logoutCancelBtn").addEventListener("click", closeLogoutOverlay);
 logoutOverlay.addEventListener("click", (e) => { if (e.target === logoutOverlay) closeLogoutOverlay(); });
-document.getElementById("logoutConfirmBtn").addEventListener("click", () => { window.location.href = "login.html"; });
+document.getElementById("logoutConfirmBtn").addEventListener("click", () => { 
+    logout(); 
+});
 
 /* toast */
 const toast = document.getElementById("toast");
