@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Child Profile | Pediatric Clinic Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/child registration/all-children/childp.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
+      </button>
+      <div class="brand-logo">
+        <img src="/logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div id="sidebarNav"></div>
+
+    <div class="sidebar-profile" id="sidebarProfile">
+      <div class="avatar">AS</div>
+      <div>
+        <div class="profile-name">Dr. Ananya Sharma</div>
+        <div class="profile-email">ananya.sharma@clinic.com</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="header">
+      <h1>Child Profile</h1>
+      <div class="header-meta" id="headerMeta"></div>
+    </header>
+
+    <div class="body">
+
+      <!-- Profile top card -->
+      <div class="card profile-card">
+        <div class="profile-photo" id="profilePhoto">AM</div>
+
+        <div class="profile-info">
+          <div class="profile-name-row">
+            <h2 id="pChildName">Aarav Mehta</h2>
+            <span class="id-pill mono" id="pPatientId">CH-2026-1042</span>
+          </div>
+          <div class="profile-meta-row">
+            <span>${''}<span class="meta-k">Age</span> <span class="meta-v" id="pAge">3 yrs 4 mo</span></span>
+            <span class="meta-sep">&middot;</span>
+            <span><span class="meta-k">Blood Group</span> <span class="meta-v" id="pBloodGroup">O+</span></span>
+            <span class="meta-sep">&middot;</span>
+            <span><span class="meta-k">Gender</span> <span class="meta-v" id="pGender">Male</span></span>
+          </div>
+          <div class="profile-meta-row">
+            <span><span class="meta-k">Parent</span> <span class="meta-v" id="pParentName">Rohit Mehta</span></span>
+            <span class="meta-sep">&middot;</span>
+            <span><span class="meta-k">Phone</span> <span class="meta-v" id="pPhone">+91 98765 43210</span></span>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn btn-outline btn-sm">Edit Profile</button>
+          <button class="btn btn-primary btn-sm">Book Appointment</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs-wrap">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="overview">Overview</button>
+          <button class="tab" data-tab="medical">Medical History</button>
+          <button class="tab" data-tab="vaccination">Vaccination</button>
+          <button class="tab" data-tab="growth">Growth</button>
+          <button class="tab" data-tab="appointments">Appointments</button>
+          <button class="tab" data-tab="consultation">Consultation</button>
+          <button class="tab" data-tab="prescription">Prescription</button>
+          <button class="tab" data-tab="documents">Documents</button>
+          <button class="tab" data-tab="billing">Billing</button>
+        </div>
+      </div>
+
+      <!-- ===================== OVERVIEW ===================== -->
+      <div class="tab-panel active" data-panel="overview">
+        <div class="kpi-row" id="overviewKpis"></div>
+
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Recent Prescription</div>
+            <div class="chart-subtitle">Latest medicines prescribed to the child</div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Medicine</th><th>Dosage</th><th>Duration</th><th>Prescribed By</th><th>Date</th></tr></thead>
+              <tbody id="overviewPrescriptionBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== MEDICAL HISTORY ===================== -->
+      <div class="tab-panel" data-panel="medical">
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Birth History</div>
+          </div>
+          <div class="review-grid" id="birthHistoryGrid"></div>
+        </div>
+
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Health Background</div>
+          </div>
+          <div class="review-grid" id="healthBackgroundGrid"></div>
+        </div>
+      </div>
+
+      <!-- ===================== VACCINATION ===================== -->
+      <div class="tab-panel" data-panel="vaccination">
+        <div class="card section-card">
+          <div class="section-head">
+            <div>
+              <div class="chart-title">Vaccination History</div>
+              <div class="chart-subtitle">All vaccines given, due, or pending</div>
+            </div>
+            <button class="btn btn-primary btn-sm" id="addVaccineBtn">+ Add Vaccine</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Vaccine</th><th>Given Date</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="vaccinationBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== GROWTH ===================== -->
+      <div class="tab-panel" data-panel="growth">
+        <div class="kpi-row" id="growthKpis"></div>
+
+        <div class="card section-card">
+          <div class="section-head">
+            <div>
+              <div class="chart-title">Growth Trend</div>
+              <div class="chart-subtitle">Height &amp; weight over time</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <svg id="growthChart" width="100%" viewBox="0 0 720 240"></svg>
+            <div class="chart-tooltip" id="growthTooltip"></div>
+          </div>
+        </div>
+
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Growth History</div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Date</th><th>Height (cm)</th><th>Weight (kg)</th><th>BMI</th><th>Doctor</th></tr></thead>
+              <tbody id="growthHistoryBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== APPOINTMENTS ===================== -->
+      <div class="tab-panel" data-panel="appointments">
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Appointment History</div>
+            <button class="btn btn-primary btn-sm">+ Book Appointment</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Doctor</th><th>Date</th><th>Time</th><th>Reason</th><th>Status</th></tr></thead>
+              <tbody id="appointmentsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== CONSULTATION ===================== -->
+      <div class="tab-panel" data-panel="consultation">
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Consultation History</div>
+          </div>
+          <div id="consultationList" class="timeline"></div>
+        </div>
+      </div>
+
+      <!-- ===================== PRESCRIPTION ===================== -->
+      <div class="tab-panel" data-panel="prescription">
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Prescription History</div>
+            <button class="btn btn-outline btn-sm">Print All</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Medicine</th><th>Morning</th><th>Afternoon</th><th>Night</th><th>Duration</th><th>Date</th></tr></thead>
+              <tbody id="prescriptionBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== DOCUMENTS ===================== -->
+      <div class="tab-panel" data-panel="documents">
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Documents</div>
+            <div class="chart-subtitle">Birth certificate, parent ID, medical reports &amp; prescriptions on file</div>
+          </div>
+          <div class="doc-grid" id="documentsGrid"></div>
+        </div>
+      </div>
+
+      <!-- ===================== BILLING ===================== -->
+      <div class="tab-panel" data-panel="billing">
+        <div class="card section-card">
+          <div class="section-head">
+            <div class="chart-title">Billing History</div>
+            <button class="btn btn-primary btn-sm">Generate Invoice</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Invoice No</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="billingBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ LOGOUT CONFIRMATION OVERLAY ============ -->
+<div class="logout-overlay" id="logoutOverlay">
+  <div class="logout-modal">
+    <div class="logout-modal-icon"></div>
+    <h3>Log out?</h3>
+    <p>Are you sure you want to log out of your account?</p>
+    <div class="logout-modal-actions">
+      <button class="btn btn-outline" id="logoutCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="logoutConfirmBtn">Logout</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/child registration/all-children/childp.js"></script>
+</body>
+</html>

@@ -3,11 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Vaccination Schedule · Pediatric Clinic</title>
+<title>Vaccination Module - Pediatric Clinic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-
   :root{
     --primary:#6C63FF;
     --secondary:#4F8EF7;
@@ -24,316 +23,395 @@
     --header-from:#FFFFFF;
     --header-to:#FFFFFF;
   }
+
   *{ box-sizing:border-box; margin:0; padding:0; }
+
   body{
     font-family:'Inter', sans-serif;
     background:linear-gradient(135deg, #E9FBF2 0%, #EEF6F9 25%, #F1EDFC 60%, #FBEFF6 100%);
     color:var(--text);
     -webkit-font-smoothing:antialiased;
   }
+
   .dashboard{ display:flex; width:100%; min-height:100vh; }
 
   /* ============ SIDEBAR ============ */
   .sidebar{
-    width:72px;
-    flex-shrink:0;
+    width:72px; flex-shrink:0;
     background:linear-gradient(180deg, var(--header-from), var(--header-to));
     border-right:1px solid var(--border);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:20px 0;
-    gap:14px;
-    overflow:hidden;
+    display:flex; flex-direction:column; align-items:center;
+    padding:20px 0; gap:14px; overflow:hidden;
     transition:width 0.28s ease, padding 0.28s ease;
   }
-
-  .sidebar.expanded{
-    width:220px;
-    align-items:stretch;
-    padding:20px 14px;
-    overflow-y:auto;
-  }
-
-  .sidebar-header{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:8px;
-    align-self:center;
-    width:100%;
-    justify-content:center;
-    overflow:hidden;
-  }
-
-  .sidebar.expanded .sidebar-header{
-    justify-content:flex-start;
-  }
-
-  .sidebar .logo{
-    width:34px; height:34px;
-    border-radius:50%;
-    background:rgba(108,99,255,0.10);
-    display:flex; align-items:center; justify-content:center;
-    cursor:pointer;
-    flex-shrink:0;
-    transition:background 0.2s ease;
-    border:none;
-  }
-
+  .sidebar.expanded{ width:220px; align-items:stretch; padding:20px 14px; overflow-y:auto; }
+  .sidebar-header{ display:flex; align-items:center; gap:10px; margin-bottom:8px; align-self:center; width:100%; justify-content:center; overflow:hidden; }
+  .sidebar.expanded .sidebar-header{ justify-content:flex-start; }
+  .sidebar .logo{ width:34px; height:34px; border-radius:50%; background:rgba(108,99,255,0.10); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:background 0.2s ease; border:none; }
   .sidebar .logo:hover{ background:rgba(108,99,255,0.18); }
-
-  .brand-logo{
-    display:none;
-    align-items:center;
-    gap:8px;
-    overflow:hidden;
-    white-space:nowrap;
-  }
-
+  .brand-logo{ display:none; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; }
   .sidebar.expanded .brand-logo{ display:flex; }
-
-  .brand-logo img{
-    height:26px;
-    width:auto;
-    max-width:120px;
-    object-fit:contain;
-    flex-shrink:0;
-  }
-
-  .brand-logo span{
-    font-size:13px;
-    font-weight:700;
-    color:var(--text);
-    letter-spacing:0.2px;
-  }
-
-  .sidebar .nav-item{
-    width:38px; height:38px; border-radius:12px;
-    display:flex; align-items:center; justify-content:center;
-    color:var(--muted); cursor:pointer;
-    transition:background 0.2s ease, color 0.2s ease, width 0.2s ease;
-    background:transparent; border:none; align-self:center; flex-shrink:0;
-    gap:12px; overflow:hidden; white-space:nowrap; text-decoration:none;
-  }
+  .brand-logo img{ height:26px; width:auto; max-width:120px; object-fit:contain; flex-shrink:0; }
+  .brand-logo span{ font-size:13px; font-weight:700; color:var(--text); letter-spacing:0.2px; }
+  .sidebar .nav-item{ width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer; transition:background 0.2s ease, color 0.2s ease, width 0.2s ease; background:transparent; border:none; align-self:center; flex-shrink:0; gap:12px; overflow:hidden; white-space:nowrap; text-decoration:none; }
   .sidebar.expanded .nav-item{ width:100%; justify-content:flex-start; padding:0 10px; align-self:stretch; }
   .sidebar .nav-item:hover{ background:rgba(108,99,255,0.08); }
   .sidebar .nav-item.active{ background:var(--primary); color:#FFFFFF; }
   .sidebar svg{ width:17px; height:17px; flex-shrink:0; }
   .nav-label{ display:none; font-size:13px; font-weight:500; }
   .sidebar.expanded .nav-label{ display:inline-block; }
+  .nav-group{ width:100%; }
+  .nav-parent{ width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer; transition:background 0.2s ease, color 0.2s ease, width 0.2s ease; background:transparent; border:none; align-self:center; flex-shrink:0; gap:12px; overflow:hidden; white-space:nowrap; text-decoration:none; }
+  .sidebar.expanded .nav-parent{ width:100%; justify-content:flex-start; padding:0 10px; align-self:stretch; }
+  .nav-parent:hover{ background:rgba(108,99,255,0.08); }
+  .nav-parent.active{ background:var(--primary); color:#FFFFFF; }
+  .nav-parent .nav-chevron{ display:none; margin-left:auto; transition:transform 0.2s ease; width:12px; height:12px; }
+  .sidebar.expanded .nav-parent .nav-chevron{ display:inline-block; }
+  .nav-parent.open .nav-chevron{ transform:rotate(180deg); }
+  .nav-submenu{ display:none; flex-direction:column; gap:4px; padding-left:10px; margin-top:2px; }
+  .sidebar.expanded .nav-group.open .nav-submenu{ display:flex; }
+  .nav-subitem{ display:flex; align-items:center; gap:10px; padding:7px 10px 7px 28px; border-radius:10px; font-size:12.5px; color:var(--muted); text-decoration:none; transition:background 0.2s ease, color 0.2s ease; }
+  .nav-subitem:hover{ background:rgba(108,99,255,0.08); color:var(--text); }
+  .nav-subitem.active{ background:var(--hover); color:var(--primary); font-weight:600; }
+  .nav-subitem .dot-sm{ width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
+
+  /* ============ MAIN COLUMN ============ */
   .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
-  .header{
-    background:linear-gradient(120deg, var(--header-from), var(--header-to));
-    border-bottom-right-radius:40px;
-    padding:28px 32px 24px 32px;
-    display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px;
-  }
-  .header h1{ color:var(--text); font-size:24px; font-weight:700; margin-bottom:6px; }
-  .header-sub{ font-size:13px; color:var(--muted); }
+  .header{ background:linear-gradient(120deg, var(--header-from), var(--header-to)); border-bottom-right-radius:40px; padding:28px 32px 40px 32px; }
+  .header h1{ color:var(--text); font-size:24px; font-weight:700; margin-bottom:10px; }
   .header-meta{ display:flex; align-items:center; gap:18px; font-size:13px; color:var(--muted); flex-wrap:wrap; }
   .header-meta span{ display:flex; align-items:center; gap:6px; }
   .header-meta svg{ width:14px; height:14px; }
-  .body{ flex:1; padding:24px 32px 32px 32px; }
-  .card{
-    background:var(--card); border:1px solid var(--border); border-radius:16px;
-    box-shadow:0 2px 10px rgba(30,41,59,0.04);
-    transition:transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
-  }
-  .card:hover{ transform:translateY(-5px) scale(1.02); box-shadow:0 14px 28px rgba(30,41,59,0.12); }
-  .kpi-row{ display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
-  .kpi-card{ flex:1; min-width:170px; padding:16px; }
-  .kpi-icon{
-    width:38px; height:38px; border-radius:12px; background:var(--hover); color:var(--primary);
-    display:flex; align-items:center; justify-content:center; margin-bottom:12px;
-  }
+
+  .body{ flex:1; padding:0 32px 32px 32px; margin-top:-24px; }
+
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 2px 10px rgba(30,41,59,0.04); }
+
+  /* KPI ROW */
+  .kpi-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:16px; margin-bottom:20px; }
+  .kpi-card{ min-width:0; padding:16px; display:flex; flex-direction:column; justify-content:space-between; transition:box-shadow 0.2s ease, transform 0.25s ease; }
+  .kpi-card:hover{ box-shadow:0 10px 22px rgba(30,41,59,0.08); transform:translateY(-3px); }
+  .kpi-icon{ width:38px; height:38px; border-radius:12px; background:var(--hover); color:var(--primary); display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
   .kpi-icon svg{ width:18px; height:18px; }
-  .kpi-icon.warning{ background:rgba(251,191,36,0.15); color:#B7791F; }
-  .kpi-icon.danger{ background:rgba(255,111,145,0.12); color:var(--danger); }
-  .kpi-icon.info{ background:rgba(79,142,247,0.12); color:var(--secondary); }
-  .kpi-icon.success{ background:rgba(20,184,166,0.12); color:var(--success); }
   .kpi-label{ font-size:12px; font-weight:500; color:var(--muted); margin-bottom:4px; }
   .kpi-value{ font-size:24px; font-weight:700; color:var(--text); }
-  .btn{ padding:9px 16px; font-size:13px; font-weight:600; border-radius:10px; cursor:pointer; border:none; transition:opacity 0.2s ease, background 0.2s ease; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
-  .btn svg{ width:14px; height:14px; }
+
+  /* SEARCH + ACTIONS BAR */
+  .toolbar{
+    display:flex; align-items:center; gap:14px; padding:18px 20px; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .search-wrap{ flex:1; min-width:220px; position:relative; }
+  .search-wrap svg{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--muted); }
+  .search-input{
+    width:100%; padding:11px 14px 11px 40px; font-size:13.5px; border:1px solid var(--border);
+    border-radius:12px; background:var(--bg); color:var(--text); outline:none;
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+  .search-input:focus{ border-color:var(--primary); background:#fff; }
+  .toolbar-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 16px; font-size:13px; font-weight:600; border-radius:11px; cursor:pointer; border:none; transition:opacity 0.2s ease, background 0.2s ease, transform 0.15s ease; white-space:nowrap; }
+  .btn:active{ transform:scale(0.97); }
+  .btn svg{ width:15px; height:15px; }
   .btn-primary{ background:var(--primary); color:#fff; }
   .btn-primary:hover{ opacity:0.9; }
-  .btn-primary:disabled{ background:var(--border); color:var(--muted); cursor:not-allowed; opacity:1; }
   .btn-outline{ background:#fff; color:var(--text); border:1px solid var(--border); }
   .btn-outline:hover{ background:var(--bg); }
-  .btn-sm{ padding:6px 12px; font-size:12px; }
-  .chart-card{ padding:20px; margin-bottom:20px; }
-  .chart-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
-  .chart-title{ font-size:16px; font-weight:600; color:var(--text); }
-  .chart-subtitle{ font-size:12px; color:var(--muted); margin-top:2px; }
-  table{ width:100%; border-collapse:collapse; font-size:13px; }
-  th{ text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:0.03em; color:var(--muted); font-weight:600; padding:10px 12px; border-bottom:1px solid var(--border); white-space:nowrap; }
-  td{ padding:12px; border-bottom:1px solid var(--border); color:var(--text); white-space:nowrap; }
-  tr:last-child td{ border-bottom:none; }
-  tr:hover td{ background:var(--hover); }
-  .badge{ display:inline-flex; align-items:center; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:600; }
-  .badge-success{ background:rgba(20,184,166,0.12); color:var(--success); }
-  .badge-warning{ background:rgba(251,191,36,0.15); color:#B7791F; }
-  .badge-danger{ background:rgba(255,111,145,0.12); color:var(--danger); }
-  .badge-info{ background:rgba(79,142,247,0.12); color:var(--secondary); }
-  .badge-neutral{ background:var(--hover); color:var(--muted); }
-  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .field{ display:flex; flex-direction:column; gap:6px; }
-  .field.full{ grid-column:1/-1; }
-  .field label{ font-size:12px; font-weight:600; color:var(--muted); }
-  .field input, .field select, .field textarea{
-    padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:13px;
-    font-family:inherit; color:var(--text); background:var(--bg);
-  }
-  .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:var(--primary); background:#fff; }
-  .field textarea{ resize:vertical; min-height:70px; }
-  .tabs{ display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:20px; flex-wrap:wrap; }
-  .tab{ padding:10px 16px; font-size:13px; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; }
-  .tab.active{ color:var(--primary); border-bottom-color:var(--primary); }
-  .tab-panel{ display:none; }
-  .tab-panel.active{ display:block; }
-  .search-bar{ display:flex; align-items:center; gap:8px; padding:9px 14px; border:1px solid var(--border); border-radius:10px; background:#fff; min-width:220px; }
-  .search-bar svg{ width:15px; height:15px; color:var(--muted); flex-shrink:0; }
-  .search-bar input{ border:none; outline:none; font-size:13px; flex:1; font-family:inherit; color:var(--text); min-width:0; }
-  .toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
-  .chips{ display:flex; gap:8px; flex-wrap:wrap; }
-  .chip{ padding:7px 14px; font-size:12px; font-weight:600; border-radius:999px; background:var(--hover); color:var(--muted); cursor:pointer; border:1px solid transparent; user-select:none; }
-  .chip.active{ background:var(--primary); color:#fff; }
-  .avatar-sm{ width:32px; height:32px; border-radius:50%; background:var(--hover); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
-  .name-cell{ display:flex; align-items:center; gap:10px; }
-  .table-scroll{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .empty-hint{ font-size:12px; color:var(--muted); text-align:center; padding:24px; white-space:normal; }
-  .divider{ height:1px; background:var(--border); margin:18px 0; }
-  @media (max-width:900px){ .form-grid, .info-list{ grid-template-columns:1fr; } }
+  .btn-soft{ background:var(--hover); color:var(--primary); }
+  .btn-soft:hover{ opacity:0.85; }
+  .btn-sm{ padding:7px 12px; font-size:12px; border-radius:9px; }
 
-  /* ---- responsiveness ---- */
-  @media (max-width:768px){
-    .header{ padding:20px; border-bottom-right-radius:24px; }
-    .header h1{ font-size:20px; }
-    .body{ padding:16px; }
-    .toolbar{ flex-direction:column; align-items:stretch; }
-    .chips{ width:100%; }
-    .chip{ flex:1; text-align:center; }
-    .search-bar{ width:100%; min-width:0; }
+  /* FILTER CHIPS */
+  .status-chips{ display:flex; gap:8px; padding:0 20px 16px 20px; flex-wrap:wrap; }
+  .chip{
+    padding:7px 14px; font-size:12.5px; font-weight:600; border-radius:999px; cursor:pointer;
+    border:1px solid var(--border); background:#fff; color:var(--muted); transition:all 0.2s ease;
+  }
+  .chip:hover{ background:var(--hover); }
+  .chip.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
+
+  /* TABLE */
+  .table-card{ padding:0; overflow:hidden; margin-bottom:24px; }
+  .table-head-row{ display:flex; align-items:center; justify-content:space-between; padding:20px 20px 4px 20px; }
+  .table-title{ font-size:16px; font-weight:600; }
+  .table-subtitle{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .table-scroll{ overflow-x:auto; }
+  table{ width:100%; border-collapse:collapse; min-width:760px; }
+  thead th{
+    text-align:left; font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px;
+    color:var(--muted); padding:14px 20px; border-bottom:1px solid var(--border); white-space:nowrap;
+  }
+  tbody td{ padding:14px 20px; font-size:13.5px; border-bottom:1px solid var(--border); vertical-align:middle; white-space:nowrap; }
+  tbody tr{ transition:background 0.15s ease; }
+  tbody tr:hover{ background:var(--hover); }
+  tbody tr:last-child td{ border-bottom:none; }
+
+  .patient-cell{ display:flex; align-items:center; gap:10px; }
+  .avatar-sm{ width:34px; height:34px; border-radius:50%; background:var(--hover); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+  .patient-name{ font-weight:600; font-size:13.5px; color:var(--text); }
+  .patient-id{ font-size:11.5px; color:var(--muted); }
+
+  .badge{ display:inline-flex; align-items:center; gap:5px; padding:4px 11px; font-size:11.5px; font-weight:700; border-radius:999px; }
+  .badge svg{ width:11px; height:11px; }
+  .badge.completed{ background:rgba(20,184,166,0.12); color:var(--success); }
+  .badge.due{ background:rgba(251,191,36,0.15); color:#B8860B; }
+  .badge.pending{ background:rgba(79,142,247,0.12); color:var(--secondary); }
+  .badge.overdue{ background:rgba(255,111,145,0.14); color:var(--danger); }
+
+  .row-actions{ display:flex; gap:8px; }
+  .icon-btn{
+    width:32px; height:32px; border-radius:9px; border:1px solid var(--border); background:#fff;
+    color:var(--muted); display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:background 0.2s ease, color 0.2s ease;
+  }
+  .icon-btn svg{ width:15px; height:15px; }
+  .icon-btn:hover{ background:var(--hover); color:var(--primary); }
+  .icon-btn.remind:hover{ color:var(--secondary); }
+
+  .table-footer{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px; font-size:12.5px; color:var(--muted); }
+  .empty-row td{ text-align:center; padding:40px 20px; color:var(--muted); font-size:13px; }
+
+  /* ============ MODAL: ADD VACCINE ============ */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(36,30,61,0.45); display:none; align-items:center;
+    justify-content:center; z-index:1000; backdrop-filter:blur(2px); padding:20px;
+  }
+  .modal-overlay.show{ display:flex; }
+  .modal{
+    background:var(--card); border-radius:18px; padding:28px; width:520px; max-width:100%;
+    max-height:88vh; overflow-y:auto; box-shadow:0 20px 50px rgba(30,41,59,0.25);
+    animation:modalPop 0.2s ease;
+  }
+  @keyframes modalPop{ from{ transform:scale(0.95); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  .modal-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  .modal-head h3{ font-size:17px; font-weight:700; }
+  .modal-close{ width:30px; height:30px; border-radius:9px; border:none; background:var(--bg); color:var(--muted); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .modal-close svg{ width:15px; height:15px; }
+  .modal-close:hover{ background:var(--hover); color:var(--text); }
+
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px; }
+  .form-field{ display:flex; flex-direction:column; gap:6px; }
+  .form-field.full{ grid-column:1 / -1; }
+  .form-field label{ font-size:12px; font-weight:600; color:var(--muted); }
+  .form-field input, .form-field select{
+    padding:10px 12px; font-size:13px; border:1px solid var(--border); border-radius:10px;
+    background:var(--bg); color:var(--text); outline:none; transition:border-color 0.2s ease, background 0.2s ease;
+    font-family:'Inter', sans-serif;
+  }
+  .form-field input:focus, .form-field select:focus{ border-color:var(--primary); background:#fff; }
+  .modal-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
+
+  /* ============ VIEW MODAL (read-only) ============ */
+  .view-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:8px; }
+  .view-field{ display:flex; flex-direction:column; gap:4px; }
+  .view-field.full{ grid-column:1 / -1; }
+  .view-field .vf-label{ font-size:11.5px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.3px; }
+  .view-field .vf-value{ font-size:14px; font-weight:600; color:var(--text); }
+  .view-patient-head{ display:flex; align-items:center; gap:14px; padding-bottom:18px; margin-bottom:18px; border-bottom:1px solid var(--border); }
+  .view-patient-head .avatar-sm{ width:46px; height:46px; font-size:15px; }
+  .view-patient-head .vp-name{ font-size:16px; font-weight:700; }
+  .view-patient-head .vp-id{ font-size:12px; color:var(--muted); }
+
+  .icon-btn.disabled{ opacity:0.35; cursor:not-allowed; pointer-events:none; }
+
+  /* TOAST */
+  .toast{
+    position:fixed; bottom:24px; right:24px; background:var(--text); color:#fff; padding:13px 20px;
+    border-radius:12px; font-size:13px; font-weight:500; box-shadow:0 10px 24px rgba(0,0,0,0.2);
+    display:flex; align-items:center; gap:10px; transform:translateY(20px); opacity:0; pointer-events:none;
+    transition:all 0.3s ease; z-index:2000;
+  }
+  .toast.show{ transform:translateY(0); opacity:1; }
+  .toast svg{ width:16px; height:16px; color:var(--success); flex-shrink:0; }
+
+  @media (max-width: 720px){
+    .form-grid{ grid-template-columns:1fr; }
     table{ min-width:640px; }
   }
-  @media (max-width:560px){
-    .sidebar{ width:60px; padding:16px 0; }
-    .sidebar.expanded{ width:190px; }
-    .kpi-row{ flex-direction:column; }
-  }
-
 </style>
 </head>
 <body>
+
 <div class="dashboard">
+
   <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
       </button>
-      <!-- Logo image: replace src="logo.png" with your clinic's actual logo file -->
       <div class="brand-logo">
-        <img src="/logo.png" alt="Little Sprouts Clinic logo" onerror="this.style.display='none'">
+        <img src="/logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
       </div>
     </div>
-    <!-- nav items injected by JS -->
     <div id="sidebarNav"></div>
   </aside>
+
+  <!-- ============ MAIN ============ -->
   <div class="main">
     <header class="header">
-      <div>
-        <h1>Vaccination Schedule</h1>
-        <div class="header-sub">Clinic-wide due, overdue and completed vaccinations</div>
-      </div>
+      <h1>Vaccination Module</h1>
+      <div class="header-meta" id="headerMeta"></div>
     </header>
+
     <div class="body">
+      <!-- KPI ROW -->
+      <div class="kpi-row" id="kpiRow"></div>
 
-<div class="kpi-row">
-  <div class="card kpi-card">
-    <div class="kpi-icon warning"></div>
-    <div class="kpi-label">Due Today</div>
-    <div class="kpi-value" id="statDue">0</div>
-  </div>
-  <div class="card kpi-card">
-    <div class="kpi-icon danger"></div>
-    <div class="kpi-label">Overdue</div>
-    <div class="kpi-value" id="statOverdue">0</div>
-  </div>
-  <div class="card kpi-card">
-    <div class="kpi-icon info"></div>
-    <div class="kpi-label">Upcoming (7 days)</div>
-    <div class="kpi-value" id="statUpcoming">0</div>
-  </div>
-  <div class="card kpi-card">
-    <div class="kpi-icon success"></div>
-    <div class="kpi-label">Completed this month</div>
-    <div class="kpi-value" id="statCompleted">0</div>
-  </div>
-</div>
+      <!-- SEARCH + ACTIONS -->
+      <div class="card toolbar">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" class="search-input" id="searchChild" placeholder="Search child by name, patient ID or parent name...">
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn btn-outline" id="sendReminderBtn"></button>
+          <button class="btn btn-primary" id="addVaccineBtn"></button>
+        </div>
+      </div>
 
-<div class="toolbar">
-  <div class="chips" id="statusChips">
-    <span class="chip active" data-status="all">All</span>
-    <span class="chip" data-status="due">Due Today</span>
-    <span class="chip" data-status="overdue">Overdue</span>
-    <span class="chip" data-status="upcoming">Upcoming</span>
-  </div>
-  <div class="search-bar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-    <input type="text" id="searchPatient" placeholder="Search patient...">
-  </div>
-</div>
+      <!-- STATUS FILTER CHIPS -->
+      <div class="card" style="padding-top:14px; margin-bottom:20px;">
+        <div class="status-chips" id="statusChips"></div>
+      </div>
 
-<div class="card" style="padding:8px;">
-  <div class="table-scroll">
-    <table>
-      <thead><tr><th>Patient</th><th>Vaccine</th><th>Due Date</th><th>Status</th><th>Reminder Sent</th><th></th></tr></thead>
-      <tbody id="vaccineTableBody">
-        <tr data-patient="saanvi gupta" data-status="due">
-          <td>Saanvi Gupta</td><td>Hepatitis B — Dose 2</td><td>04 Jul 2026</td>
-          <td><span class="badge badge-warning">Due Today</span></td>
-          <td><span class="badge badge-success">Yes</span></td>
-          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
-        </tr>
-        <tr data-patient="kabir nair" data-status="overdue">
-          <td>Kabir Nair</td><td>DPT Booster</td><td>25 Jun 2026</td>
-          <td><span class="badge badge-danger">Overdue</span></td>
-          <td><span class="badge badge-neutral">No</span></td>
-          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
-        </tr>
-        <tr data-patient="ayaan verma" data-status="upcoming">
-          <td>Ayaan Verma</td><td>MMR</td><td>12 Jul 2026</td>
-          <td><span class="badge badge-info">Upcoming</span></td>
-          <td><span class="badge badge-success">Yes</span></td>
-          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
-        </tr>
-        <tr data-patient="anaya singh" data-status="upcoming">
-          <td>Anaya Singh</td><td>Rotavirus — Dose 3</td><td>08 Jul 2026</td>
-          <td><span class="badge badge-info">Upcoming</span></td>
-          <td><span class="badge badge-success">Yes</span></td>
-          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
-        </tr>
-        <tr data-patient="myra kapoor" data-status="overdue">
-          <td>Myra Kapoor</td><td>OPV Booster</td><td>30 Jun 2026</td>
-          <td><span class="badge badge-danger">Overdue</span></td>
-          <td><span class="badge badge-neutral">No</span></td>
-          <td><button class="btn btn-primary btn-sm" data-action="mark-given">Mark as Given</button></td>
-        </tr>
-        <tr id="noResultsRow" style="display:none;">
-          <td colspan="6" class="empty-hint">No vaccinations match the selected filters.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
+      <!-- HISTORY TABLE -->
+      <div class="card table-card">
+        <div class="table-head-row">
+          <div>
+            <div class="table-title">Vaccination History</div>
+            <div class="table-subtitle">All recorded and scheduled vaccinations</div>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Patient</th>
+                <th>Vaccine</th>
+                <th>Given Date</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Doctor</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="vaccineTableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="resultCount"></span>
+          <span>Sorted by due date</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-<script>
 
+<!-- ============ ADD VACCINE MODAL ============ -->
+<div class="modal-overlay" id="addVaccineOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="vaccineModalTitle">Add Vaccine Record</h3>
+      <button class="modal-close" id="closeAddVaccine">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <input type="hidden" id="fEditIndex" value="">
+    <div class="form-grid">
+      <div class="form-field full">
+        <label>Search Child</label>
+        <input type="text" id="fChild" placeholder="Type patient name or ID...">
+      </div>
+      <div class="form-field">
+        <label>Vaccine</label>
+        <select id="fVaccine">
+          <option>BCG</option>
+          <option>DPT</option>
+          <option>MMR</option>
+          <option>Polio (OPV)</option>
+          <option>Hepatitis B</option>
+          <option>Rotavirus</option>
+          <option>Pentavalent</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Doctor</label>
+        <select id="fDoctor">
+          <option>Dr. Ananya Sharma</option>
+          <option>Dr. Rohan Mehta</option>
+          <option>Dr. Kavita Nair</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Given Date</label>
+        <input type="date" id="fGivenDate">
+      </div>
+      <div class="form-field">
+        <label>Due Date</label>
+        <input type="date" id="fDueDate">
+      </div>
+      <div class="form-field">
+        <label>Next Due Date</label>
+        <input type="date" id="fNextDue">
+      </div>
+      <div class="form-field">
+        <label>Status</label>
+        <select id="fStatus">
+          <option>Completed</option>
+          <option>Due</option>
+          <option>Pending</option>
+          <option>Overdue</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelAddVaccine">Cancel</button>
+      <button class="btn btn-primary" id="saveVaccineBtn">Save Vaccine</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VIEW VACCINE MODAL (read-only overlay) ============ -->
+<div class="modal-overlay" id="viewVaccineOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Vaccine Record</h3>
+      <button class="modal-close" id="closeViewVaccine">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="view-patient-head">
+      <div class="avatar-sm" id="vViewAvatar">--</div>
+      <div>
+        <div class="vp-name" id="vViewName">--</div>
+        <div class="vp-id" id="vViewId">--</div>
+      </div>
+    </div>
+    <div class="view-grid">
+      <div class="view-field"><span class="vf-label">Vaccine</span><span class="vf-value" id="vViewVaccine">--</span></div>
+      <div class="view-field"><span class="vf-label">Status</span><span class="vf-value" id="vViewStatus">--</span></div>
+      <div class="view-field"><span class="vf-label">Given Date</span><span class="vf-value" id="vViewGiven">--</span></div>
+      <div class="view-field"><span class="vf-label">Due Date</span><span class="vf-value" id="vViewDue">--</span></div>
+      <div class="view-field"><span class="vf-label">Next Due Date</span><span class="vf-value" id="vViewNext">--</span></div>
+      <div class="view-field"><span class="vf-label">Doctor</span><span class="vf-value" id="vViewDoctor">--</span></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="closeViewVaccine2">Close</button>
+      <button class="btn btn-primary" id="viewToEditBtn">Edit Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>
+  <span id="toastMsg">Saved successfully</span>
+</div>
+
+<script>
+/* =========================================================
+   ICONS
+========================================================= */
 const ICON = {
   home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>`,
   users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15 20c0-2.4 1-4.2 2.7-5.2"/></svg>`,
@@ -341,138 +419,392 @@ const ICON = {
   syringe: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3-2-2"/><path d="M17 7l-9.5 9.5"/><path d="M4 20l2.5-2.5"/><path d="M9 12l3 3M11 10l3 3"/></svg>`,
   check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>`,
   clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
-  alert: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9L2.3 18a2 2 0 001.7 3h16a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>`,
-  ruler: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1.5"/><path d="M7 8v3M11 8v3M15 8v3"/></svg>`,
+  alert: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 17h.01"/></svg>`,
   activity: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2 7 4-14 2 7h6"/></svg>`,
   clipboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg>`,
   file: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5"/></svg>`,
   receipt: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h8"/></svg>`,
   settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 13.5a7.7 7.7 0 000-3l2-1.5-2-3.4-2.3.9a7.5 7.5 0 00-2.6-1.5L14 2h-4l-.5 2.5a7.5 7.5 0 00-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.7 7.7 0 000 3l-2 1.6 2 3.4 2.3-1a7.5 7.5 0 002.6 1.5L10 22h4l.5-2.5a7.5 7.5 0 002.6-1.5l2.3 1 2-3.4z"/></svg>`,
-  user: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>`
+  user: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>`,
+  userPlus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-7 7-7s7 3 7 7"/><path d="M18 8v6M15 11h6"/></svg>`,
+  stethoscope: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v6a4 4 0 004 4 4 4 0 004-4V3"/><path d="M12 13v3a5 5 0 005 5 5 5 0 005-5"/><circle cx="20" cy="6" r="2"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
+  bell: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>`,
+  eye: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>`,
+  ruler: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="1.5"/><path d="M7 8v3M11 8v3M15 8v3"/></svg>`,
+  chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
+  lifebuoy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5 5l4 4M19 5l-4 4M5 19l4-4M19 19l-4-4"/></svg>`,
+  book: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v17H6.5A2.5 2.5 0 004 21.5v-17z"/><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/></svg>`,
+  logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>`
 };
 
+/* =========================================================
+   SIDEBAR NAV (same structure as dashboard, active = Vaccinations)
+========================================================= */
 const sidebarItems = [
-  { icon: ICON.home, label: "Dashboard", href: "dashboard.html" },
-  { icon: ICON.user, label: "Patients", href: "patients.html" },
-  { icon: ICON.calendar, label: "Appointments", href: "appointments.html" },
-  { icon: ICON.syringe, label: "Vaccinations", href: "vaccination-schedule.html" },
-  { icon: ICON.activity, label: "Growth", href: "growth-monitoring.html" },
-  { icon: ICON.clipboard, label: "Prescriptions", href: "prescription.html" },
-  { icon: ICON.file, label: "Reports", href: "reports.html" },
-  { icon: ICON.receipt, label: "Billing", href: "billing.html" },
-  { icon: ICON.settings, label: "User Management", href: "user-management.html" },
-  { icon: ICON.user, label: "Profile", href: "#" }
+  { type: "link",  icon: ICON.home,        label: "Dashboard",         href: "index.html" },
+  { type: "group", icon: ICON.users,       label: "Children",         key: "children", children: [
+      { label: "All Children",   href: "patients.html" },
+      { label: "Register Child", href: "registration.html" }
+    ]
+  },
+  { type: "link",  icon: ICON.calendar,    label: "Appointments",      href: "appointments.html" },
+  { type: "link",  icon: ICON.stethoscope, label: "Consultations",     href: "opd.html" },
+  { type: "link",  icon: ICON.clipboard,   label: "Prescriptions",     href: "prescription.html" },
+  { type: "link",  icon: ICON.syringe,     label: "Vaccinations",      href: "vaccination.html" },
+  { type: "link",  icon: ICON.activity,    label: "Growth Monitoring", href: "growth.html" },
+  { type: "link",  icon: ICON.file,        label: "Reports",           href: "reports.html" },
+  { type: "link",  icon: ICON.receipt,     label: "Billing",           href: "billing.html" },
+  { type: "link",  icon: ICON.userPlus,    label: "User Management",   href: "user.html" },
+  { type: "link",  icon: ICON.settings,    label: "Settings",          href: "settings.html" },
+  { type: "action", icon: ICON.logout,      label: "Logout",            action: "logout" }
 ];
+
+const currentPage = (location.pathname.split("/").pop() || "vaccination.html").toLowerCase();
+
+document.getElementById("headerMeta").innerHTML = `
+  <span>${ICON.calendar} July 7, 2026 &middot; 10:15</span>
+  <span>${ICON.user} Dr. Ananya Sharma</span>
+  <span>${ICON.activity} Sunshine Pediatric Clinic</span>
+`;
+
 const sidebarNav = document.getElementById("sidebarNav");
 sidebarNav.style.display = "contents";
+
 sidebarItems.forEach(item => {
-  const a = document.createElement("a");
-  a.className = "nav-item" + (item.label === "Vaccinations" ? " active" : "");
-  a.title = item.label;
-  a.href = item.href;
-  a.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-  sidebarNav.appendChild(a);
+  if (item.type === "link") {
+    const a = document.createElement("a");
+    const isActive = item.href.toLowerCase() === currentPage;
+    a.className = "nav-item" + (isActive ? " active" : "");
+    a.href = item.href;
+    a.title = item.label;
+    a.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
+    sidebarNav.appendChild(a);
+    return;
+  }
+  if (item.type === "action") {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "nav-item";
+    btn.title = item.label;
+    btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
+    btn.addEventListener("click", () => { if (item.action === "logout") window.location.href = "login.html"; });
+    sidebarNav.appendChild(btn);
+    return;
+  }
+  const childActive = item.children.some(c => c.href.toLowerCase() === currentPage);
+  const group = document.createElement("div");
+  group.className = "nav-group" + (childActive ? " open" : "");
+  const parent = document.createElement("button");
+  parent.type = "button";
+  parent.className = "nav-parent" + (childActive ? " active" : "");
+  parent.title = item.label;
+  parent.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>` + `<span class="nav-chevron">${ICON.chevron}</span>`;
+  parent.addEventListener("click", () => { group.classList.toggle("open"); parent.classList.toggle("open"); });
+  const submenu = document.createElement("div");
+  submenu.className = "nav-submenu";
+  item.children.forEach(c => {
+    const a = document.createElement("a");
+    const isActive = c.href.toLowerCase() === currentPage;
+    a.className = "nav-subitem" + (isActive ? " active" : "");
+    a.href = c.href;
+    a.innerHTML = `<span class="dot-sm"></span>${c.label}`;
+    submenu.appendChild(a);
+  });
+  group.appendChild(parent);
+  group.appendChild(submenu);
+  sidebarNav.appendChild(group);
 });
+
 const sidebar = document.getElementById("sidebar");
 document.getElementById("sidebarToggle").addEventListener("click", () => sidebar.classList.toggle("expanded"));
 
-/* KPI icons */
-document.querySelectorAll(".kpi-icon").forEach((el) => {
-  if (el.classList.contains("warning")) el.innerHTML = ICON.clock;
-  else if (el.classList.contains("danger")) el.innerHTML = ICON.alert;
-  else if (el.classList.contains("info")) el.innerHTML = ICON.calendar;
-  else if (el.classList.contains("success")) el.innerHTML = ICON.check;
-});
+/* toolbar button labels (with icons) */
+document.getElementById("sendReminderBtn").innerHTML = `${ICON.bell} Send Reminder`;
+document.getElementById("addVaccineBtn").innerHTML = `${ICON.plus} Add Vaccine`;
 
 /* =========================================================
-   DATA + STATE
+   MOCK DATA — Vaccination records
 ========================================================= */
-const tbody = document.getElementById("vaccineTableBody");
-const noResultsRow = document.getElementById("noResultsRow");
+let records = [
+  { id:"P-1042", name:"Aarav Kapoor",   vaccine:"BCG",         given:"2026-06-02", due:"2026-06-02", next:"—",          status:"Completed", doctor:"Dr. Ananya Sharma" },
+  { id:"P-1042", name:"Aarav Kapoor",   vaccine:"Hepatitis B", given:"—",         due:"2026-07-12", next:"2026-11-12", status:"Due",       doctor:"Dr. Ananya Sharma" },
+  { id:"P-1088", name:"Diya Sharma",    vaccine:"DPT",         given:"2026-05-18", due:"2026-05-18", next:"2026-09-18", status:"Completed", doctor:"Dr. Rohan Mehta" },
+  { id:"P-1101", name:"Vihaan Reddy",   vaccine:"Polio (OPV)", given:"—",         due:"2026-06-25", next:"—",          status:"Overdue",   doctor:"Dr. Kavita Nair" },
+  { id:"P-1076", name:"Anaya Iyer",     vaccine:"MMR",         given:"—",         due:"2026-07-20", next:"—",          status:"Pending",   doctor:"Dr. Ananya Sharma" },
+  { id:"P-1122", name:"Kabir Singh",    vaccine:"Rotavirus",   given:"2026-04-30", due:"2026-04-30", next:"2026-08-30", status:"Completed", doctor:"Dr. Rohan Mehta" },
+  { id:"P-1053", name:"Ira Patel",      vaccine:"Pentavalent", given:"—",         due:"2026-07-02", next:"—",          status:"Overdue",   doctor:"Dr. Kavita Nair" },
+  { id:"P-1099", name:"Reyansh Gupta",  vaccine:"Hepatitis B", given:"—",         due:"2026-07-15", next:"—",          status:"Due",       doctor:"Dr. Ananya Sharma" },
+  { id:"P-1064", name:"Myra Desai",     vaccine:"BCG",         given:"2026-06-28", due:"2026-06-28", next:"—",          status:"Completed", doctor:"Dr. Rohan Mehta" },
+  { id:"P-1130", name:"Arjun Nair",     vaccine:"DPT",         given:"—",         due:"2026-07-25", next:"—",          status:"Pending",   doctor:"Dr. Kavita Nair" }
+];
 
-function getDataRows(){
-  return Array.from(tbody.querySelectorAll("tr[data-status]"));
-}
+let activeChip = "All";
+let searchTerm = "";
 
-const STATUS_META = {
-  due:       { label: "Due Today", badgeClass: "badge-warning" },
-  overdue:   { label: "Overdue",   badgeClass: "badge-danger" },
-  upcoming:  { label: "Upcoming",  badgeClass: "badge-info" },
-  completed: { label: "Completed", badgeClass: "badge-success" }
+const statusMeta = {
+  Completed: { cls:"completed", icon:ICON.check },
+  Due:       { cls:"due",       icon:ICON.clock },
+  Pending:   { cls:"pending",   icon:ICON.clock },
+  Overdue:   { cls:"overdue",   icon:ICON.alert }
 };
 
 /* =========================================================
-   KPI STATS (recomputed from live table data)
+   KPI CARDS (derived from records)
 ========================================================= */
-let completedThisMonth = 214; // running total, seeded so the KPI isn't just today's marks
-function recomputeStats(){
-  const rows = getDataRows();
-  document.getElementById("statDue").textContent = rows.filter(r => r.dataset.status === "due").length;
-  document.getElementById("statOverdue").textContent = rows.filter(r => r.dataset.status === "overdue").length;
-  document.getElementById("statUpcoming").textContent = rows.filter(r => r.dataset.status === "upcoming").length;
-  document.getElementById("statCompleted").textContent = completedThisMonth;
+function renderKPIs(){
+  const counts = { Completed:0, Due:0, Pending:0, Overdue:0 };
+  records.forEach(r => counts[r.status]++);
+  const kpiData = [
+    { label:"Total Vaccinations", value: records.length, icon: ICON.syringe },
+    { label:"Completed",          value: counts.Completed, icon: ICON.check },
+    { label:"Due This Week",      value: counts.Due, icon: ICON.clock },
+    { label:"Pending",            value: counts.Pending, icon: ICON.clock },
+    { label:"Overdue",            value: counts.Overdue, icon: ICON.alert }
+  ];
+  document.getElementById("kpiRow").innerHTML = kpiData.map(k => `
+    <div class="card kpi-card">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+    </div>
+  `).join("");
 }
 
 /* =========================================================
-   FILTERS: status chips + search
+   STATUS CHIPS
 ========================================================= */
-const statusChips = document.querySelectorAll("#statusChips .chip");
-const searchInput = document.getElementById("searchPatient");
-
-function activeStatus(){
-  const active = document.querySelector("#statusChips .chip.active");
-  return active ? active.dataset.status : "all";
-}
-
-function applyFilters(){
-  const status = activeStatus();
-  const search = searchInput.value.trim().toLowerCase();
-  let visibleCount = 0;
-
-  getDataRows().forEach(row => {
-    const matchesStatus = status === "all" || row.dataset.status === status;
-    const matchesSearch = !search || row.dataset.patient.includes(search);
-    const visible = matchesStatus && matchesSearch;
-    row.style.display = visible ? "" : "none";
-    if (visible) visibleCount++;
+function renderChips(){
+  const chips = ["All", "Completed", "Due", "Pending", "Overdue"];
+  document.getElementById("statusChips").innerHTML = chips.map(c => `
+    <div class="chip ${c === activeChip ? 'active' : ''}" data-chip="${c}">${c}</div>
+  `).join("");
+  document.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      activeChip = chip.getAttribute("data-chip");
+      renderChips();
+      renderTable();
+    });
   });
-
-  noResultsRow.style.display = visibleCount === 0 ? "" : "none";
 }
-
-statusChips.forEach(chip => {
-  chip.addEventListener("click", () => {
-    statusChips.forEach(c => c.classList.remove("active"));
-    chip.classList.add("active");
-    applyFilters();
-  });
-});
-searchInput.addEventListener("input", applyFilters);
 
 /* =========================================================
-   MARK AS GIVEN
+   TABLE
 ========================================================= */
-tbody.addEventListener("click", (e) => {
-  const btn = e.target.closest('[data-action="mark-given"]');
-  if (!btn) return;
-  const row = btn.closest("tr");
-  if (!row || row.dataset.status === "completed") return;
+function initials(name){
+  return name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase();
+}
 
-  row.dataset.status = "completed";
-  row.querySelector("td:nth-child(4)").innerHTML = `<span class="badge ${STATUS_META.completed.badgeClass}">${STATUS_META.completed.label}</span>`;
-  row.querySelector("td:nth-child(5)").innerHTML = `<span class="badge badge-success">Yes</span>`;
-  btn.textContent = "Given";
-  btn.disabled = true;
+function renderTable(){
+  let data = records.filter(r => activeChip === "All" || r.status === activeChip);
+  if (searchTerm.trim()) {
+    const q = searchTerm.trim().toLowerCase();
+    data = data.filter(r => r.name.toLowerCase().includes(q) || r.id.toLowerCase().includes(q));
+  }
 
-  completedThisMonth += 1;
-  recomputeStats();
-  applyFilters();
+  const body = document.getElementById("vaccineTableBody");
+
+  if (!data.length) {
+    body.innerHTML = `<tr class="empty-row"><td colspan="7">No vaccination records match your search or filter.</td></tr>`;
+    document.getElementById("resultCount").textContent = "0 records";
+    return;
+  }
+
+  body.innerHTML = data.map((r, i) => {
+    const meta = statusMeta[r.status];
+    return `
+      <tr>
+        <td>
+          <div class="patient-cell">
+            <div class="avatar-sm">${initials(r.name)}</div>
+            <div>
+              <div class="patient-name">${r.name}</div>
+              <div class="patient-id">${r.id}</div>
+            </div>
+          </div>
+        </td>
+        <td>${r.vaccine}</td>
+        <td>${r.given}</td>
+        <td>${r.due}</td>
+        <td><span class="badge ${meta.cls}">${meta.icon} ${r.status}</span></td>
+        <td>${r.doctor}</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" title="View" data-action="view" data-i="${i}">${ICON.eye}</button>
+            <button class="icon-btn" title="Edit" data-action="edit" data-i="${i}">${ICON.edit}</button>
+            <button class="icon-btn remind ${r.status === 'Completed' ? 'disabled' : ''}" title="${r.status === 'Completed' ? 'Already completed, no reminder needed' : 'Send Reminder'}" data-action="remind" data-i="${i}">${ICON.bell}</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  document.getElementById("resultCount").textContent = `${data.length} record${data.length === 1 ? "" : "s"}`;
+
+  /* store the currently rendered (filtered) dataset globally so modal actions
+     can map back to the real index inside the master `records` array */
+  currentTableData = data;
+
+  body.querySelectorAll("[data-action='remind']").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const idx = e.currentTarget.getAttribute("data-i");
+      const rec = currentTableData[idx];
+      if (rec.status === "Completed") return; // guarded, but double-check
+      showToast(`Reminder sent to ${rec.name}'s parent for ${rec.vaccine}`);
+    });
+  });
+  body.querySelectorAll("[data-action='view']").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const idx = e.currentTarget.getAttribute("data-i");
+      openViewVaccine(currentTableData[idx]);
+    });
+  });
+  body.querySelectorAll("[data-action='edit']").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const idx = e.currentTarget.getAttribute("data-i");
+      openEditVaccine(currentTableData[idx]);
+    });
+  });
+}
+let currentTableData = [];
+
+document.getElementById("searchChild").addEventListener("input", (e) => {
+  searchTerm = e.target.value;
+  renderTable();
 });
 
-/* ---------- init ---------- */
-recomputeStats();
-applyFilters();
+/* =========================================================
+   SEND REMINDER (bulk, top toolbar)
+========================================================= */
+document.getElementById("sendReminderBtn").addEventListener("click", () => {
+  const dueCount = records.filter(r => r.status === "Due" || r.status === "Overdue").length;
+  showToast(`Reminders sent to ${dueCount} parent${dueCount === 1 ? "" : "s"} with due/overdue vaccines`);
+});
 
+/* =========================================================
+   ADD / EDIT VACCINE MODAL (same overlay, two modes)
+========================================================= */
+const addOverlay = document.getElementById("addVaccineOverlay");
+const vaccineModalTitle = document.getElementById("vaccineModalTitle");
+const saveVaccineBtn = document.getElementById("saveVaccineBtn");
+
+function fillVaccineForm(rec){
+  document.getElementById("fChild").value = rec ? rec.name : "";
+  document.getElementById("fVaccine").value = rec ? rec.vaccine : "BCG";
+  document.getElementById("fDoctor").value = rec ? rec.doctor : "Dr. Ananya Sharma";
+  document.getElementById("fGivenDate").value = (rec && rec.given !== "—") ? rec.given : "";
+  document.getElementById("fDueDate").value = (rec && rec.due !== "—") ? rec.due : "";
+  document.getElementById("fNextDue").value = (rec && rec.next !== "—") ? rec.next : "";
+  document.getElementById("fStatus").value = rec ? rec.status : "Completed";
+}
+
+function openAddVaccine(){
+  document.getElementById("fEditIndex").value = "";
+  vaccineModalTitle.textContent = "Add Vaccine Record";
+  saveVaccineBtn.textContent = "Save Vaccine";
+  fillVaccineForm(null);
+  addOverlay.classList.add("show");
+}
+
+function openEditVaccine(rec){
+  // find the record's real position in the master `records` array (by object identity)
+  const realIndex = records.indexOf(rec);
+  document.getElementById("fEditIndex").value = realIndex;
+  vaccineModalTitle.textContent = "Edit Vaccine Record";
+  saveVaccineBtn.textContent = "Update Vaccine";
+  fillVaccineForm(rec);
+  addOverlay.classList.add("show");
+}
+
+function closeAddVaccine(){ addOverlay.classList.remove("show"); }
+
+document.getElementById("addVaccineBtn").addEventListener("click", openAddVaccine);
+document.getElementById("closeAddVaccine").addEventListener("click", closeAddVaccine);
+document.getElementById("cancelAddVaccine").addEventListener("click", closeAddVaccine);
+addOverlay.addEventListener("click", (e) => { if (e.target === addOverlay) closeAddVaccine(); });
+
+saveVaccineBtn.addEventListener("click", () => {
+  const childName = document.getElementById("fChild").value.trim() || "New Patient";
+  const vaccine = document.getElementById("fVaccine").value;
+  const doctor = document.getElementById("fDoctor").value;
+  const given = document.getElementById("fGivenDate").value || "—";
+  const due = document.getElementById("fDueDate").value || "—";
+  const next = document.getElementById("fNextDue").value || "—";
+  const status = document.getElementById("fStatus").value;
+  const editIndexRaw = document.getElementById("fEditIndex").value;
+
+  if (editIndexRaw !== "") {
+    // update existing record in place
+    const idx = parseInt(editIndexRaw, 10);
+    const existingId = records[idx].id;
+    records[idx] = { id: existingId, name: childName, vaccine, given, due, next, status, doctor };
+    showToast(`${vaccine} record updated for ${childName}`);
+  } else {
+    // create new record
+    records.unshift({
+      id: "P-" + Math.floor(1000 + Math.random() * 999),
+      name: childName, vaccine, given, due, next, status, doctor
+    });
+    showToast(`${vaccine} record added for ${childName}`);
+  }
+
+  closeAddVaccine();
+  renderKPIs();
+  renderChips();
+  renderTable();
+});
+
+/* =========================================================
+   VIEW VACCINE MODAL (read-only, with quick "Edit" hand-off)
+========================================================= */
+const viewOverlay = document.getElementById("viewVaccineOverlay");
+let viewingRecord = null;
+
+function openViewVaccine(rec){
+  viewingRecord = rec;
+  document.getElementById("vViewAvatar").textContent = initials(rec.name);
+  document.getElementById("vViewName").textContent = rec.name;
+  document.getElementById("vViewId").textContent = rec.id;
+  document.getElementById("vViewVaccine").textContent = rec.vaccine;
+  document.getElementById("vViewStatus").innerHTML = `<span class="badge ${statusMeta[rec.status].cls}">${statusMeta[rec.status].icon} ${rec.status}</span>`;
+  document.getElementById("vViewGiven").textContent = rec.given;
+  document.getElementById("vViewDue").textContent = rec.due;
+  document.getElementById("vViewNext").textContent = rec.next;
+  document.getElementById("vViewDoctor").textContent = rec.doctor;
+  viewOverlay.classList.add("show");
+}
+
+function closeViewVaccine(){ viewOverlay.classList.remove("show"); viewingRecord = null; }
+
+document.getElementById("closeViewVaccine").addEventListener("click", closeViewVaccine);
+document.getElementById("closeViewVaccine2").addEventListener("click", closeViewVaccine);
+viewOverlay.addEventListener("click", (e) => { if (e.target === viewOverlay) closeViewVaccine(); });
+
+document.getElementById("viewToEditBtn").addEventListener("click", () => {
+  if (!viewingRecord) return;
+  closeViewVaccine();
+  openEditVaccine(viewingRecord);
+});
+
+/* =========================================================
+   TOAST
+========================================================= */
+let toastTimer;
+function showToast(msg){
+  const toast = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+}
+
+/* =========================================================
+   INITIAL RENDER
+========================================================= */
+renderKPIs();
+renderChips();
+renderTable();
 </script>
 </body>
 </html>

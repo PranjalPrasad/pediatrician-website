@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Prescription · Pediatric Clinic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="prescription.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
+      </button>
+      <div class="brand-logo">
+        <img src="/logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div id="sidebarNav"></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="header">
+      <h1>Prescription</h1>
+      <div class="header-meta" id="headerMeta"></div>
+    </header>
+
+    <div class="body">
+      <div class="kpi-row" id="kpiRow"></div>
+
+      <!-- SEARCH PATIENT -->
+      <div class="card section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+              Select Patient
+            </div>
+            <div class="section-subtitle">Search a registered child to write a prescription</div>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label class="form-label" for="patientSearch">Search Patient</label>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+            <input class="form-input" type="text" id="patientSearch" placeholder="Type child name or patient ID..." autocomplete="off">
+            <div class="suggest-list" id="suggestList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATIENT SUMMARY -->
+      <div class="card section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+              Patient Summary
+            </div>
+          </div>
+        </div>
+        <div id="patientSummaryBox"></div>
+      </div>
+
+      <!-- PRESCRIPTION FORM (hidden until a patient is selected) -->
+      <div id="rxSection">
+        <div class="card section-card">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5L3.5 13.5a5 5 0 117-7l7 7a5 5 0 01-7 7z"/><path d="M8.5 8.5l7 7"/></svg>
+                Prescription
+              </div>
+              <div class="section-subtitle">Add medicines with dosage timing and instructions</div>
+            </div>
+          </div>
+
+          <button type="button" class="add-medicine-btn" id="addMedicineBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Add Medicine
+          </button>
+
+          <div class="rx-table-wrap">
+            <table class="rx-table">
+              <thead>
+                <tr>
+                  <th>Medicine</th>
+                  <th>Morning</th>
+                  <th>Afternoon</th>
+                  <th>Night</th>
+                  <th>Duration</th>
+                  <th>Food</th>
+                  <th>Instruction</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="rxTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="form-error" id="rxError"></div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" id="printRxBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 14h12v8H6z"/></svg>
+              Print
+            </button>
+            <button type="button" class="btn btn-primary" id="saveRxBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>
+              Save
+            </button>
+          </div>
+        </div>
+
+        <div class="card section-card">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/></svg>
+                Prescription History
+              </div>
+              <div class="section-subtitle">Previously prescribed medicines for this child</div>
+            </div>
+          </div>
+          <div class="timeline" id="rxHistory"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- MODAL OVERLAY (View / Edit / Delete) -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<!-- HIDDEN PRINT AREA (only visible when printing) -->
+<div id="printArea" style="display:none;"></div>
+
+<script src="/prescription/prescription.js"></script>
+</body>
+</html>

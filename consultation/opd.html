@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>OPD Consultation · Pediatric Clinic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/consultation/opd.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
+      </button>
+      <div class="brand-logo">
+        <img src="/logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div id="sidebarNav"></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="header">
+      <h1>OPD Consultation</h1>
+      <div class="header-meta" id="headerMeta"></div>
+    </header>
+
+    <div class="body">
+      <div class="kpi-row" id="kpiRow"></div>
+
+      <!-- SEARCH PATIENT -->
+      <div class="card section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+              Open Patient
+            </div>
+            <div class="section-subtitle">Search a registered child to view summary and start the consultation</div>
+          </div>
+        </div>
+        <div class="form-field full">
+          <label class="form-label" for="patientSearch">Search Patient</label>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+            <input class="form-input" type="text" id="patientSearch" placeholder="Type child name or patient ID..." autocomplete="off">
+            <div class="suggest-list" id="suggestList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATIENT SUMMARY -->
+      <div class="card section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+              Patient Summary
+            </div>
+            <div class="section-subtitle">Quick overview before consultation</div>
+          </div>
+        </div>
+        <div id="patientSummaryBox"></div>
+      </div>
+
+      <!-- CONSULTATION FORM + HISTORY (hidden until a patient is selected) -->
+      <div id="consultationSection">
+        <div class="card section-card">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3v6a4 4 0 004 4 4 4 0 004-4V3"/><path d="M12 13v3a5 5 0 005 5 5 5 0 005-5"/><circle cx="20" cy="6" r="2"/></svg>
+                Consultation
+              </div>
+              <div class="section-subtitle">Record today's visit details</div>
+            </div>
+          </div>
+
+          <form id="consultForm">
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label" for="visitDateInput">Visit Date</label>
+                <input class="form-input" type="date" id="visitDateInput" value="2026-07-07">
+              </div>
+
+              <div class="form-field">
+                <label class="form-label" for="followUpInput">Follow Up Date</label>
+                <input class="form-input" type="date" id="followUpInput">
+              </div>
+
+              <div class="form-field full">
+                <label class="form-label" for="complaintInput">Chief Complaint</label>
+                <input class="form-input" type="text" id="complaintInput" placeholder="e.g. Fever since 2 days">
+              </div>
+
+              <div class="form-field full">
+                <label class="form-label">Symptoms</label>
+                <div class="tag-input-wrap" id="tagInputWrap">
+                  <input class="tag-input" id="tagInput" placeholder="Type a symptom and press Enter...">
+                </div>
+                <div class="symptom-suggest" id="symptomSuggest"></div>
+              </div>
+
+              <div class="form-field full">
+                <label class="form-label" for="diagnosisInput">Diagnosis</label>
+                <textarea class="form-textarea" id="diagnosisInput" placeholder="Doctor's diagnosis..."></textarea>
+              </div>
+
+              <div class="form-field full">
+                <label class="form-label" for="notesInput">Doctor Notes</label>
+                <textarea class="form-textarea" id="notesInput" placeholder="Additional notes, advice, precautions..."></textarea>
+              </div>
+            </div>
+
+            <div class="form-error" id="consultError"></div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" id="clearConsultBtn">Clear</button>
+              <button type="button" class="btn btn-outline" id="generatePrescriptionBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5L3.5 13.5a5 5 0 117-7l7 7a5 5 0 01-7 7z"/><path d="M8.5 8.5l7 7"/></svg>
+                Generate Prescription
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>
+                Save
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card section-card">
+          <div class="section-head">
+            <div>
+              <div class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/></svg>
+                Consultation History
+              </div>
+              <div class="section-subtitle">Previous visits for this child</div>
+            </div>
+          </div>
+          <div class="timeline" id="historyTimeline"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<!-- MODAL OVERLAY (View / Edit / Delete) -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<script src="/consultation/opd.js"></script>
+</body>
+</html>

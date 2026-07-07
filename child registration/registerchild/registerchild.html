@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Register Child | Pediatric Clinic Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/child registration/registerchild/registerchild.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
+      </button>
+      <div class="brand-logo">
+        <img src="/logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <!-- nav items injected by JS -->
+    <div id="sidebarNav"></div>
+
+    <div class="sidebar-profile" id="sidebarProfile">
+      <div class="avatar">AS</div>
+      <div>
+        <div class="profile-name">Dr. Ananya Sharma</div>
+        <div class="profile-email">ananya.sharma@clinic.com</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="header">
+      <h1>Register New Child</h1>
+      <div class="header-meta" id="headerMeta"></div>
+    </header>
+
+    <div class="body">
+
+      <!-- Stepper card -->
+      <div class="card stepper-card">
+        <ol class="stepper" id="stepper">
+          <li class="step active" data-step="1">
+            <span class="step-node">1</span>
+            <span class="step-label">Basic Details</span>
+          </li>
+          <li class="step" data-step="2">
+            <span class="step-node">2</span>
+            <span class="step-label">Medical History</span>
+          </li>
+          <li class="step" data-step="3">
+            <span class="step-node">3</span>
+            <span class="step-label">Vaccination</span>
+          </li>
+          <li class="step" data-step="4">
+            <span class="step-node">4</span>
+            <span class="step-label">Growth</span>
+          </li>
+          <li class="step" data-step="5">
+            <span class="step-node">5</span>
+            <span class="step-label">Review</span>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Form card -->
+      <div class="card form-card">
+        <form id="regForm" novalidate>
+
+          <!-- STEP 1: BASIC DETAILS -->
+          <div class="step-panel active" data-panel="1">
+            <div class="panel-head">
+              <div class="chart-title">Basic Information</div>
+              <div class="chart-subtitle">Core identity details for the child and parent/guardian</div>
+            </div>
+
+            <div class="photo-row">
+              <div class="photo-upload" id="photoBox">
+                <span id="photoPlaceholder">＋<br>Photo</span>
+                <img id="photoPreview" alt="Child photo preview" hidden>
+              </div>
+              <input type="file" id="childPhoto" accept="image/*" hidden>
+              <div class="photo-meta">
+                <label class="btn btn-outline btn-sm" for="childPhoto">Upload Photo</label>
+                <span class="hint">JPG or PNG, up to 5MB</span>
+              </div>
+            </div>
+
+            <div class="grid grid-3">
+              <div class="field">
+                <label for="patientId">Patient ID</label>
+                <input type="text" id="patientId" name="patientId" class="mono" readonly>
+              </div>
+              <div class="field">
+                <label for="childName">Child Name <req></req></label>
+                <input type="text" id="childName" name="childName" placeholder="e.g. Aarav Mehta" required>
+              </div>
+              <div class="field">
+                <label for="gender">Gender <req></req></label>
+                <select id="gender" name="gender" required>
+                  <option value="">Select</option>
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-3">
+              <div class="field">
+                <label for="dob">Date of Birth <req></req></label>
+                <input type="date" id="dob" name="dob" required>
+              </div>
+              <div class="field">
+                <label for="age">Age</label>
+                <input type="text" id="age" name="age" class="mono" readonly placeholder="Auto-calculated">
+              </div>
+              <div class="field">
+                <label for="bloodGroup">Blood Group</label>
+                <select id="bloodGroup" name="bloodGroup">
+                  <option value="">Unknown</option>
+                  <option>A+</option><option>A-</option>
+                  <option>B+</option><option>B-</option>
+                  <option>AB+</option><option>AB-</option>
+                  <option>O+</option><option>O-</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="divider"><span>Parent / Guardian</span></div>
+
+            <div class="grid grid-3">
+              <div class="field">
+                <label for="parentName">Parent Name <req></req></label>
+                <input type="text" id="parentName" name="parentName" required>
+              </div>
+              <div class="field">
+                <label for="fatherName">Father Name</label>
+                <input type="text" id="fatherName" name="fatherName">
+              </div>
+              <div class="field">
+                <label for="motherName">Mother Name</label>
+                <input type="text" id="motherName" name="motherName">
+              </div>
+            </div>
+
+            <div class="grid grid-3">
+              <div class="field">
+                <label for="mobile">Mobile <req></req></label>
+                <input type="tel" id="mobile" name="mobile" placeholder="+91 " required>
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email">
+              </div>
+              <div class="field">
+                <label for="emergencyContact">Emergency Contact</label>
+                <input type="tel" id="emergencyContact" name="emergencyContact">
+              </div>
+            </div>
+
+            <div class="grid grid-1">
+              <div class="field">
+                <label for="address">Address</label>
+                <textarea id="address" name="address" rows="2"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: MEDICAL HISTORY -->
+          <div class="step-panel" data-panel="2">
+            <div class="panel-head">
+              <div class="chart-title">Medical History</div>
+              <div class="chart-subtitle">Birth history and ongoing medical background</div>
+            </div>
+
+            <div class="divider"><span>Birth History</span></div>
+            <div class="grid grid-3">
+              <div class="field">
+                <label for="birthWeight">Birth Weight (kg)</label>
+                <input type="number" step="0.01" id="birthWeight" name="birthWeight">
+              </div>
+              <div class="field">
+                <label for="deliveryType">Delivery Type</label>
+                <select id="deliveryType" name="deliveryType">
+                  <option value="">Select</option>
+                  <option>Normal</option>
+                  <option>Cesarean</option>
+                  <option>Assisted</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="premature">Premature?</label>
+                <select id="premature" name="premature">
+                  <option value="">Select</option>
+                  <option>Yes</option>
+                  <option>No</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="divider"><span>Health Background</span></div>
+            <div class="grid grid-2">
+              <div class="field">
+                <label for="pastIllness">Past Illness</label>
+                <textarea id="pastIllness" name="pastIllness" rows="2"></textarea>
+              </div>
+              <div class="field">
+                <label for="allergies">Allergies</label>
+                <textarea id="allergies" name="allergies" rows="2"></textarea>
+              </div>
+            </div>
+
+            <div class="grid grid-2">
+              <div class="field">
+                <label for="hospitalAdmission">Hospital Admission</label>
+                <textarea id="hospitalAdmission" name="hospitalAdmission" rows="2"></textarea>
+              </div>
+              <div class="field">
+                <label for="currentMedicines">Current Medicines</label>
+                <textarea id="currentMedicines" name="currentMedicines" rows="2"></textarea>
+              </div>
+            </div>
+
+            <div class="grid grid-2">
+              <div class="field">
+                <label for="chronicDisease">Chronic Disease</label>
+                <input type="text" id="chronicDisease" name="chronicDisease">
+              </div>
+              <div class="field">
+                <label for="familyDisease">Family Disease</label>
+                <input type="text" id="familyDisease" name="familyDisease">
+              </div>
+            </div>
+
+            <div class="grid grid-1">
+              <div class="field">
+                <label for="milestones">Development Milestones</label>
+                <textarea id="milestones" name="milestones" rows="2" placeholder="e.g. sitting, walking, first words..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: VACCINATION -->
+          <div class="step-panel" data-panel="3">
+            <div class="panel-head">
+              <div class="chart-title">Vaccination</div>
+              <div class="chart-subtitle">Add every vaccine already given or due</div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="data-table" id="vaccineTable">
+                <thead>
+                  <tr>
+                    <th>Vaccine</th>
+                    <th>Due Date</th>
+                    <th>Given Date</th>
+                    <th>Doctor</th>
+                    <th>Status</th>
+                    <th>Next Due</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="vaccineBody"></tbody>
+              </table>
+            </div>
+            <button type="button" class="btn btn-add" id="addVaccineRow">+ Add Vaccine</button>
+          </div>
+
+          <!-- STEP 4: GROWTH -->
+          <div class="step-panel" data-panel="4">
+            <div class="panel-head">
+              <div class="chart-title">Growth</div>
+              <div class="chart-subtitle">Baseline measurements at registration</div>
+            </div>
+
+            <div class="grid grid-4">
+              <div class="field">
+                <label for="height">Height (cm)</label>
+                <input type="number" step="0.1" id="height" name="height">
+              </div>
+              <div class="field">
+                <label for="weight">Weight (kg)</label>
+                <input type="number" step="0.1" id="weight" name="weight">
+              </div>
+              <div class="field">
+                <label for="bmi">BMI</label>
+                <input type="text" id="bmi" name="bmi" class="mono" readonly placeholder="Auto-calculated">
+              </div>
+              <div class="field">
+                <label for="headCirc">Head Circumference (cm)</label>
+                <input type="number" step="0.1" id="headCirc" name="headCirc">
+              </div>
+            </div>
+
+            <div class="grid grid-1">
+              <div class="field">
+                <label for="growthNotes">Notes</label>
+                <textarea id="growthNotes" name="growthNotes" rows="2"></textarea>
+              </div>
+            </div>
+
+            <div class="divider"><span>Growth Chart</span></div>
+            <div class="chart-placeholder">
+              Growth chart will appear here once follow-up visits are recorded.
+            </div>
+          </div>
+
+          <!-- STEP 5: REVIEW -->
+          <div class="step-panel" data-panel="5">
+            <div class="panel-head">
+              <div class="chart-title">Review &amp; Confirm</div>
+              <div class="chart-subtitle">Check every section before saving the child's record</div>
+            </div>
+
+            <div class="review-section">
+              <div class="review-head">
+                <h3>Basic Details</h3>
+                <button type="button" class="link-btn" data-goto="1">Edit</button>
+              </div>
+              <div class="review-grid" id="reviewBasic"></div>
+            </div>
+
+            <div class="review-section">
+              <div class="review-head">
+                <h3>Medical History</h3>
+                <button type="button" class="link-btn" data-goto="2">Edit</button>
+              </div>
+              <div class="review-grid" id="reviewMedical"></div>
+            </div>
+
+            <div class="review-section">
+              <div class="review-head">
+                <h3>Vaccination</h3>
+                <button type="button" class="link-btn" data-goto="3">Edit</button>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table" id="reviewVaccineTable">
+                  <thead>
+                    <tr><th>Vaccine</th><th>Due Date</th><th>Given Date</th><th>Doctor</th><th>Status</th><th>Next Due</th></tr>
+                  </thead>
+                  <tbody id="reviewVaccineBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="review-section">
+              <div class="review-head">
+                <h3>Growth</h3>
+                <button type="button" class="link-btn" data-goto="4">Edit</button>
+              </div>
+              <div class="review-grid" id="reviewGrowth"></div>
+            </div>
+          </div>
+
+          <!-- FOOTER NAV -->
+          <div class="form-footer">
+            <button type="button" class="btn btn-outline" id="prevBtn">Previous</button>
+            <div class="spacer"></div>
+            <button type="button" class="btn btn-outline" id="saveDraftBtn">Save Draft</button>
+            <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+            <button type="submit" class="btn btn-primary" id="saveChildBtn" hidden>Save Child</button>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ LOGOUT CONFIRMATION OVERLAY ============ -->
+<div class="logout-overlay" id="logoutOverlay">
+  <div class="logout-modal">
+    <div class="logout-modal-icon"></div>
+    <h3>Log out?</h3>
+    <p>Are you sure you want to log out of your account?</p>
+    <div class="logout-modal-actions">
+      <button class="btn btn-outline" id="logoutCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="logoutConfirmBtn">Logout</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/child registration/registerchild/registerchild.js"></script>
+</body>
+</html>

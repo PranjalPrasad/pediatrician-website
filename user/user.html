@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>User Management | Pediatric Clinic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/user/user.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
+      </button>
+      <div class="brand-logo">
+        <img src="/logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
+      </div>
+    </div>
+    <div id="sidebarNav"></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="header">
+      <h1>User Management</h1>
+      <div class="header-meta" id="headerMeta"></div>
+    </header>
+
+    <div class="body">
+
+      <div class="kpi-row" id="kpiRow"></div>
+
+      <div class="card table-card">
+        <div class="table-toolbar">
+          <div class="search-box">
+            <span class="search-icon" id="searchIcon"></span>
+            <input type="text" id="searchInput" placeholder="Search by name, email or phone...">
+          </div>
+
+          <div class="toolbar-right">
+            <div class="mini-select" id="roleFilterSelect">
+              <span id="roleFilterLabel">All Roles</span>
+              <span class="mini-chevron"></span>
+              <div class="mini-dropdown" id="roleFilterDropdown"></div>
+            </div>
+
+            <div class="mini-select" id="statusFilterSelect">
+              <span id="statusFilterLabel">All Status</span>
+              <span class="mini-chevron"></span>
+              <div class="mini-dropdown" id="statusFilterDropdown"></div>
+            </div>
+
+            <button class="btn btn-primary btn-add" id="addUserBtn">+ Add User</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>Photo</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th class="th-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+          <div class="empty-state" id="emptyState" style="display:none;">No users match your filters.</div>
+        </div>
+
+        <div class="table-footer">
+          <span id="resultCount"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD / EDIT USER MODAL ============ -->
+<div class="overlay" id="userModalOverlay">
+  <div class="modal user-modal">
+    <div class="modal-head">
+      <h3 id="userModalTitle">Add User</h3>
+      <button class="modal-close" id="userModalClose">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="photo-upload-row">
+        <div class="photo-preview" id="photoPreview">
+          <span id="photoInitials">?</span>
+        </div>
+        <div class="photo-upload-actions">
+          <label class="btn btn-outline btn-sm" for="photoInput">Upload Photo</label>
+          <input type="file" id="photoInput" accept="image/*" hidden>
+          <span class="photo-hint">JPG or PNG, up to 2MB</span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Full Name</label>
+          <input type="text" id="fieldName" placeholder="e.g. Dr. Rohan Mehta">
+        </div>
+
+        <div class="form-field">
+          <label>Role</label>
+          <div class="mini-select form-select" id="fieldRoleSelect">
+            <span id="fieldRoleLabel">Select role</span>
+            <span class="mini-chevron"></span>
+            <div class="mini-dropdown" id="fieldRoleDropdown"></div>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Phone</label>
+          <input type="text" id="fieldPhone" placeholder="e.g. 98765 43210">
+        </div>
+
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" id="fieldEmail" placeholder="e.g. name@clinic.com">
+        </div>
+
+        <div class="form-field" id="passwordField">
+          <label>Temporary Password</label>
+          <input type="password" id="fieldPassword" placeholder="Set a temporary password">
+        </div>
+
+        <div class="form-field">
+          <label>Status</label>
+          <div class="mini-select form-select" id="fieldStatusSelect">
+            <span id="fieldStatusLabel">Active</span>
+            <span class="mini-chevron"></span>
+            <div class="mini-dropdown" id="fieldStatusDropdown"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-error" id="formError"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="userModalCancel">Cancel</button>
+      <button class="btn btn-primary" id="userModalSave">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DELETE CONFIRM OVERLAY ============ -->
+<div class="overlay" id="deleteOverlay">
+  <div class="modal confirm-modal">
+    <div class="confirm-icon danger" id="deleteIcon"></div>
+    <h3>Remove this user?</h3>
+    <p id="deleteMessage">This will permanently remove the user's access to the system.</p>
+    <div class="modal-actions center">
+      <button class="btn btn-outline" id="deleteCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="deleteConfirmBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RESET PASSWORD CONFIRM OVERLAY ============ -->
+<div class="overlay" id="resetOverlay">
+  <div class="modal confirm-modal">
+    <div class="confirm-icon warning" id="resetIcon"></div>
+    <h3>Reset password?</h3>
+    <p id="resetMessage">A new temporary password will be generated and sent to the user's email.</p>
+    <div class="modal-actions center">
+      <button class="btn btn-outline" id="resetCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="resetConfirmBtn">Reset Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast" id="toast"></div>
+
+<!-- ============ LOGOUT CONFIRMATION OVERLAY ============ -->
+<div class="overlay" id="logoutOverlay">
+  <div class="modal confirm-modal">
+    <div class="confirm-icon danger" id="logoutIcon"></div>
+    <h3>Log out?</h3>
+    <p>Are you sure you want to log out of your account?</p>
+    <div class="modal-actions center">
+      <button class="btn btn-outline" id="logoutCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="logoutConfirmBtn">Logout</button>
+    </div>
+  </div>
+</div>
+
+<script src="/user/user.js"></script>
+</body>
+</html>
