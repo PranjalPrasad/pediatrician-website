@@ -155,6 +155,67 @@
 
   .sidebar.expanded .nav-label{ display:inline-block; }
 
+  /* Submenu (Children -> All Children / Register Child) */
+  .nav-group{ width:100%; }
+  .nav-parent{
+    width:38px; height:38px;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted);
+    cursor:pointer;
+    transition:background 0.2s ease, color 0.2s ease, width 0.2s ease;
+    background:transparent;
+    border:none;
+    align-self:center;
+    flex-shrink:0;
+    gap:12px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-decoration:none;
+  }
+  .sidebar.expanded .nav-parent{
+    width:100%;
+    justify-content:flex-start;
+    padding:0 10px;
+    align-self:stretch;
+  }
+  .nav-parent:hover{ background:rgba(108,99,255,0.08); }
+  .nav-parent.active{ background:var(--primary); color:#FFFFFF; }
+  .nav-parent .nav-chevron{
+    display:none;
+    margin-left:auto;
+    transition:transform 0.2s ease;
+    width:12px; height:12px;
+  }
+  .sidebar.expanded .nav-parent .nav-chevron{ display:inline-block; }
+  .nav-parent.open .nav-chevron{ transform:rotate(180deg); }
+
+  .nav-submenu{
+    display:none;
+    flex-direction:column;
+    gap:4px;
+    padding-left:10px;
+    margin-top:2px;
+  }
+  .sidebar.expanded .nav-group.open .nav-submenu{ display:flex; }
+
+  .nav-subitem{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:7px 10px 7px 28px;
+    border-radius:10px;
+    font-size:12.5px;
+    color:var(--muted);
+    text-decoration:none;
+    transition:background 0.2s ease, color 0.2s ease;
+  }
+  .nav-subitem:hover{ background:rgba(108,99,255,0.08); color:var(--text); }
+  .nav-subitem.active{ background:var(--hover); color:var(--primary); font-weight:600; }
+  .nav-subitem .dot-sm{
+    width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0;
+  }
+
   /* ============ MAIN COLUMN ============ */
   .main{
     flex:1;
@@ -215,16 +276,18 @@
 
   /* KPI ROW */
   .kpi-row{
-    display:flex;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
     gap:16px;
     margin-bottom:20px;
-    flex-wrap:wrap;
   }
 
   .kpi-card{
-    flex:1;
-    min-width:150px;
+    min-width:0;
     padding:16px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
     transition:box-shadow 0.2s ease;
   }
 
@@ -246,6 +309,7 @@
     font-weight:500;
     color:var(--muted);
     margin-bottom:4px;
+    min-height:32px;
   }
 
   .kpi-value{
@@ -260,6 +324,7 @@
     display:flex;
     align-items:center;
     gap:8px;
+    flex-wrap:wrap;
   }
 
   .kpi-trend{
@@ -270,6 +335,7 @@
     font-weight:600;
     padding:2px 8px;
     border-radius:999px;
+    white-space:nowrap;
   }
 
   .kpi-trend svg{ width:12px; height:12px; }
@@ -277,7 +343,7 @@
   .kpi-trend.up{ color:var(--success); background:rgba(46,204,113,0.12); }
   .kpi-trend.down{ color:var(--danger); background:rgba(255,107,107,0.12); }
 
-  .kpi-sub{ font-size:11px; color:var(--muted); }
+  .kpi-sub{ font-size:11px; color:var(--muted); white-space:nowrap; }
 
   /* CHART CARDS */
   .chart-card{
@@ -358,6 +424,22 @@
     padding:24px 20px;
     display:flex;
     flex-direction:column;
+    transition:width 0.28s ease, padding 0.28s ease;
+    overflow:hidden;
+  }
+
+  .filters.collapsed{
+    width:64px;
+    padding:24px 14px;
+  }
+
+  .filters.collapsed .filters-head span:last-child,
+  .filters.collapsed #filterFields,
+  .filters.collapsed .filter-status,
+  .filters.collapsed .filter-actions,
+  .filters.collapsed .links,
+  .filters.collapsed .profile{
+    display:none;
   }
 
   .filters-head{
@@ -506,6 +588,69 @@
   .profile-name{ font-size:13px; font-weight:600; color:var(--text); }
   .profile-email{ font-size:11px; color:var(--muted); }
 
+  /* ============ LOGOUT OVERLAY ============ */
+  .logout-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(36,30,61,0.45);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:1000;
+    backdrop-filter:blur(2px);
+  }
+
+  .logout-overlay.show{ display:flex; }
+
+  .logout-modal{
+    background:var(--card);
+    border-radius:18px;
+    padding:28px;
+    width:320px;
+    max-width:90vw;
+    box-shadow:0 20px 50px rgba(30,41,59,0.25);
+    text-align:center;
+    animation:logoutPop 0.2s ease;
+  }
+
+  @keyframes logoutPop{
+    from{ transform:scale(0.92); opacity:0; }
+    to{ transform:scale(1); opacity:1; }
+  }
+
+  .logout-modal-icon{
+    width:52px; height:52px;
+    border-radius:50%;
+    background:rgba(255,111,145,0.12);
+    color:var(--danger);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 16px auto;
+  }
+
+  .logout-modal-icon svg{ width:24px; height:24px; }
+
+  .logout-modal h3{
+    font-size:17px;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:8px;
+  }
+
+  .logout-modal p{
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:22px;
+    line-height:1.5;
+  }
+
+  .logout-modal-actions{
+    display:flex;
+    gap:10px;
+  }
+
+  .btn-danger{ background:var(--danger); color:#fff; }
+  .btn-danger:hover{ opacity:0.9; }
+
   @media (max-width: 1100px){
     .filters{ display:none; }
   }
@@ -578,23 +723,10 @@
               <div class="chart-subtitle">By state</div>
             </div>
           </div>
-          <div style="display:flex; align-items:center; justify-content:center; height:220px;">
-            <svg viewBox="0 0 320 340" width="200" height="220">
-              <path d="M170 20 C200 25 215 45 220 65 C245 75 260 95 255 115
-                       C270 130 275 150 260 165 C275 185 270 210 250 220
-                       C255 245 240 265 220 270 C215 290 200 305 185 300
-                       C180 315 165 325 155 315 C140 320 130 305 135 290
-                       C110 285 100 265 110 250 C90 240 85 215 100 200
-                       C85 185 90 160 110 150 C100 130 110 105 135 95
-                       C130 75 145 55 165 50 C160 35 165 22 170 20 Z"
-                fill="#F1EDFC" stroke="#ECE8F9" stroke-width="1.5" />
-              <circle cx="178" cy="78" r="7" fill="#6C63FF" opacity="0.85"><title>Delhi</title></circle>
-              <circle cx="140" cy="210" r="10" fill="#6C63FF" opacity="0.85"><title>Maharashtra</title></circle>
-              <circle cx="150" cy="260" r="8" fill="#6C63FF" opacity="0.85"><title>Karnataka</title></circle>
-              <circle cx="168" cy="305" r="7" fill="#6C63FF" opacity="0.85"><title>Tamil Nadu</title></circle>
-              <circle cx="245" cy="165" r="7" fill="#6C63FF" opacity="0.85"><title>West Bengal</title></circle>
-              <circle cx="95" cy="170" r="6" fill="#6C63FF" opacity="0.85"><title>Gujarat</title></circle>
-            </svg>
+          <div class="chart-wrap" style="display:flex; align-items:center; gap:16px; justify-content:center; height:220px;">
+            <svg id="pieChart" viewBox="0 0 200 200" width="150" height="150"></svg>
+            <div id="pieLegend" style="display:flex; flex-direction:column; gap:8px; font-size:12px; color:var(--muted);"></div>
+            <div class="chart-tooltip" id="pieTooltip"></div>
           </div>
         </div>
       </div>
@@ -602,7 +734,7 @@
   </div>
 
   <!-- ============ FILTER PANEL ============ -->
-  <aside class="filters">
+  <aside class="filters" id="filtersPanel">
     <div class="filters-head" id="filtersHead"></div>
     <div id="filterFields"></div>
     <div class="filter-status" id="filterStatus"></div>
@@ -620,6 +752,19 @@
     </div>
   </aside>
 
+</div>
+
+<!-- ============ LOGOUT CONFIRMATION OVERLAY ============ -->
+<div class="logout-overlay" id="logoutOverlay">
+  <div class="logout-modal">
+    <div class="logout-modal-icon"></div>
+    <h3>Log out?</h3>
+    <p>Are you sure you want to log out of your account?</p>
+    <div class="logout-modal-actions">
+      <button class="btn btn-outline" id="logoutCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="logoutConfirmBtn">Logout</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -646,27 +791,34 @@ const ICON = {
   filter: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-6 8v6l-4 2v-8z"/></svg>`,
   chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
   lifebuoy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/><path d="M5 5l4 4M19 5l-4 4M5 19l4-4M19 19l-4-4"/></svg>`,
-  book: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v17H6.5A2.5 2.5 0 004 21.5v-17z"/><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/></svg>`
+  book: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v17H6.5A2.5 2.5 0 004 21.5v-17z"/><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/></svg>`,
+  logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>`
 };
 
 /* =========================================================
    SIDEBAR ROUTING
-   Maps every nav item to its actual file in the project,
-   matching the file list in the workspace.
+   Structure matches the required menu:
+   Dashboard / Children (All Children, Register Child) /
+   Appointments / Consultations / Prescriptions / Vaccinations /
+   Growth Monitoring / Reports / Billing / User Management / Settings
 ========================================================= */
 const sidebarItems = [
-  { icon: ICON.home,        label: "Dashboard",     href: "index.html" },
-  { icon: ICON.userPlus,    label: "Registration",  href: "registration.html" },
-  { icon: ICON.user,        label: "Patients",      href: "patients.html" },
-  { icon: ICON.calendar,    label: "Appointments",  href: "appointments.html" },
-  { icon: ICON.stethoscope, label: "OPD",            href: "opd.html" },
-  { icon: ICON.syringe,     label: "Vaccinations",  href: "vaccination.html" },
-  { icon: ICON.activity,    label: "Growth",        href: "growth.html" },
-  { icon: ICON.clipboard,   label: "Prescriptions", href: "prescription.html" },
-  { icon: ICON.file,        label: "Reports",       href: "reports.html" },
-  { icon: ICON.receipt,     label: "Billing",       href: "billing.html" },
-  { icon: ICON.settings,    label: "User Settings", href: "user.html" },
-  { icon: ICON.user,        label: "Profile",       href: "profile.html" }
+  { type: "link",  icon: ICON.home,        label: "Dashboard",         href: "index.html" },
+  { type: "group", icon: ICON.users,       label: "Children",         key: "children", children: [
+      { label: "All Children",   href: "patients.html" },
+      { label: "Register Child", href: "registration.html" }
+    ]
+  },
+  { type: "link",  icon: ICON.calendar,    label: "Appointments",      href: "appointments.html" },
+  { type: "link",  icon: ICON.stethoscope, label: "Consultations",     href: "opd.html" },
+  { type: "link",  icon: ICON.clipboard,   label: "Prescriptions",     href: "prescription.html" },
+  { type: "link",  icon: ICON.syringe,     label: "Vaccinations",      href: "vaccination.html" },
+  { type: "link",  icon: ICON.activity,    label: "Growth Monitoring", href: "growth.html" },
+  { type: "link",  icon: ICON.file,        label: "Reports",           href: "reports.html" },
+  { type: "link",  icon: ICON.receipt,     label: "Billing",           href: "billing.html" },
+  { type: "link",  icon: ICON.userPlus,    label: "User Management",   href: "user.html" },
+  { type: "link",  icon: ICON.settings,    label: "Settings",          href: "settings.html" },
+  { type: "action", icon: ICON.logout,      label: "Logout",            action: "logout" }
 ];
 
 /* current page filename, used to mark the active nav item */
@@ -724,6 +876,16 @@ const vaccineData = [
   { name: "Rota",  value: 38, status: "Due" }
 ];
 
+/* Patient Distribution by state (same states used in the previous map) */
+const stateData = [
+  { name: "Maharashtra", value: 32, color: "var(--primary)" },
+  { name: "Karnataka",   value: 22, color: "var(--secondary)" },
+  { name: "Delhi",       value: 18, color: "var(--accent)" },
+  { name: "Tamil Nadu",  value: 16, color: "var(--success)" },
+  { name: "West Bengal", value: 14, color: "var(--warning)" },
+  { name: "Gujarat",     value: 10, color: "var(--danger)" }
+];
+
 /* =========================================================
    RENDER: header meta icons
 ========================================================= */
@@ -734,35 +896,113 @@ document.getElementById("headerMeta").innerHTML = `
 `;
 
 /* =========================================================
-   SIDEBAR NAV (real links, active state matches current file)
+   SIDEBAR NAV (real links, active state matches current file,
+   "Children" is a collapsible group with 2 sub-links)
 ========================================================= */
 const sidebarNav = document.getElementById("sidebarNav");
 sidebarNav.style.display = "contents";
+
 sidebarItems.forEach(item => {
-  const a = document.createElement("a");
-  const isActive = item.href.toLowerCase() === currentPage;
-  a.className = "nav-item" + (isActive ? " active" : "");
-  a.href = item.href;
-  a.title = item.label;
-  a.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-  sidebarNav.appendChild(a);
+  if (item.type === "link") {
+    const a = document.createElement("a");
+    const isActive = item.href.toLowerCase() === currentPage;
+    a.className = "nav-item" + (isActive ? " active" : "");
+    a.href = item.href;
+    a.title = item.label;
+    a.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
+    sidebarNav.appendChild(a);
+    return;
+  }
+
+  if (item.type === "action") {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "nav-item";
+    btn.title = item.label;
+    btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
+    btn.addEventListener("click", () => {
+      if (item.action === "logout") openLogoutOverlay();
+    });
+    sidebarNav.appendChild(btn);
+    return;
+  }
+
+  // group (Children -> All Children / Register Child)
+  const childActive = item.children.some(c => c.href.toLowerCase() === currentPage);
+
+  const group = document.createElement("div");
+  group.className = "nav-group" + (childActive ? " open" : "");
+
+  const parent = document.createElement("button");
+  parent.type = "button";
+  parent.className = "nav-parent" + (childActive ? " active" : "");
+  parent.title = item.label;
+  parent.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>` + `<span class="nav-chevron">${ICON.chevron}</span>`;
+  parent.addEventListener("click", () => {
+    group.classList.toggle("open");
+    parent.classList.toggle("open");
+  });
+
+  const submenu = document.createElement("div");
+  submenu.className = "nav-submenu";
+  item.children.forEach(c => {
+    const a = document.createElement("a");
+    const isActive = c.href.toLowerCase() === currentPage;
+    a.className = "nav-subitem" + (isActive ? " active" : "");
+    a.href = c.href;
+    a.innerHTML = `<span class="dot-sm"></span>${c.label}`;
+    submenu.appendChild(a);
+  });
+
+  group.appendChild(parent);
+  group.appendChild(submenu);
+  sidebarNav.appendChild(group);
 });
 
-/* SIDEBAR TOGGLE (click logo to expand/collapse, doesn't navigate) */
+/* SIDEBAR TOGGLE (click icon to expand/collapse, doesn't navigate) */
 const sidebar = document.getElementById("sidebar");
 const sidebarToggle = document.getElementById("sidebarToggle");
 sidebarToggle.addEventListener("click", () => {
   sidebar.classList.toggle("expanded");
 });
 
-/* FILTERS HEAD ICON */
-document.getElementById("filtersHead").innerHTML = `${ICON.filter}<span>Filters</span>`;
+/* FILTERS HEAD ICON — clicking the funnel icon collapses/expands the Filters panel itself */
+const filtersPanel = document.getElementById("filtersPanel");
+document.getElementById("filtersHead").innerHTML = `<span id="filterToggle" style="display:inline-flex; cursor:pointer;" title="Toggle filters panel">${ICON.filter}</span><span>Filters</span>`;
+document.getElementById("filterToggle").addEventListener("click", () => {
+  filtersPanel.classList.toggle("collapsed");
+});
 
 /* SUPPORT / MANUAL LINKS */
 document.getElementById("linksList").innerHTML = `
   <a href="#">${ICON.lifebuoy} Support</a>
   <a href="#">${ICON.book} User Manual</a>
 `;
+
+/* =========================================================
+   LOGOUT OVERLAY
+========================================================= */
+const logoutOverlay = document.getElementById("logoutOverlay");
+document.querySelector("#logoutOverlay .logout-modal-icon").innerHTML = ICON.logout;
+
+function openLogoutOverlay(){
+  logoutOverlay.classList.add("show");
+}
+
+function closeLogoutOverlay(){
+  logoutOverlay.classList.remove("show");
+}
+
+document.getElementById("logoutCancelBtn").addEventListener("click", closeLogoutOverlay);
+
+// clicking the dark backdrop (outside the modal) also cancels
+logoutOverlay.addEventListener("click", (e) => {
+  if (e.target === logoutOverlay) closeLogoutOverlay();
+});
+
+document.getElementById("logoutConfirmBtn").addEventListener("click", () => {
+  window.location.href = "login.html";
+});
 
 /* =========================================================
    KPI RENDERING
@@ -1035,11 +1275,69 @@ function drawBarChart(data){
 }
 
 /* =========================================================
+   PIE CHART (Patient Distribution by state)
+========================================================= */
+function drawPieChart(data){
+  const svg = document.getElementById("pieChart");
+  const tooltip = document.getElementById("pieTooltip");
+  const legend = document.getElementById("pieLegend");
+  const cx = 100, cy = 100, r = 85;
+
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+  let startAngle = -90;
+
+  let svgHTML = "";
+  const slices = [];
+
+  data.forEach((d, i) => {
+    const angle = (d.value / total) * 360;
+    const endAngle = startAngle + angle;
+
+    const startRad = (Math.PI / 180) * startAngle;
+    const endRad = (Math.PI / 180) * endAngle;
+
+    const x1 = cx + r * Math.cos(startRad);
+    const y1 = cy + r * Math.sin(startRad);
+    const x2 = cx + r * Math.cos(endRad);
+    const y2 = cy + r * Math.sin(endRad);
+
+    const largeArc = angle > 180 ? 1 : 0;
+
+    const pathD = `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+    svgHTML += `<path class="pie-slice" data-i="${i}" d="${pathD}" fill="${d.color}" stroke="#fff" stroke-width="2" style="cursor:pointer"/>`;
+
+    slices.push({ ...d, pct: Math.round((d.value / total) * 100) });
+    startAngle = endAngle;
+  });
+
+  svg.innerHTML = svgHTML;
+
+  legend.innerHTML = slices.map(s => `
+    <span style="display:flex; align-items:center; gap:6px;">
+      <span class="dot" style="background:${s.color}"></span>${s.name} &middot; ${s.pct}%
+    </span>
+  `).join("");
+
+  svg.querySelectorAll(".pie-slice").forEach(slice => {
+    slice.addEventListener("mousemove", (e) => {
+      const i = slice.getAttribute("data-i");
+      const d = slices[i];
+      tooltip.style.display = "block";
+      tooltip.style.left = e.offsetX + 12 + "px";
+      tooltip.style.top = e.offsetY - 10 + "px";
+      tooltip.innerHTML = `<strong>${d.name}</strong><br>${d.value} patients (${d.pct}%)`;
+    });
+    slice.addEventListener("mouseleave", () => tooltip.style.display = "none");
+  });
+}
+
+/* =========================================================
    INITIAL RENDER
 ========================================================= */
 renderKPIs();
 drawLineChart(visitData, "All");
 drawBarChart(vaccineData);
+drawPieChart(stateData);
 filterStatusEl.textContent = activeFilterSummary();
 </script>
 </body>
