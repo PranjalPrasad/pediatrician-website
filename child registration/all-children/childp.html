@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Child Profile | Pediatric Clinic Dashboard</title>
+<title>All Children | Pediatric Clinic Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/child registration/all-children/childp.css">
@@ -13,8 +13,11 @@
 
 <div class="dashboard">
 
+  <!-- Backdrop shown behind sidebar on small screens -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
   <!-- ============ SIDEBAR ============ -->
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar expanded" id="sidebar">
     <div class="sidebar-header">
       <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
@@ -26,10 +29,10 @@
     <div id="sidebarNav"></div>
 
     <div class="sidebar-profile" id="sidebarProfile">
-      <div class="avatar">AS</div>
+      <div class="avatar" id="profileAvatar">AS</div>
       <div>
-        <div class="profile-name">Dr. Ananya Sharma</div>
-        <div class="profile-email">ananya.sharma@clinic.com</div>
+        <div class="profile-name" id="profileName">Dr. Ananya Sharma</div>
+        <div class="profile-email" id="profileEmail">ananya.sharma@clinic.com</div>
       </div>
     </div>
   </aside>
@@ -53,7 +56,7 @@
             <span class="id-pill mono" id="pPatientId">CH-2026-1042</span>
           </div>
           <div class="profile-meta-row">
-            <span>${''}<span class="meta-k">Age</span> <span class="meta-v" id="pAge">3 yrs 4 mo</span></span>
+            <span><span class="meta-k">Age</span> <span class="meta-v" id="pAge">3 yrs 4 mo</span></span>
             <span class="meta-sep">&middot;</span>
             <span><span class="meta-k">Blood Group</span> <span class="meta-v" id="pBloodGroup">O+</span></span>
             <span class="meta-sep">&middot;</span>
@@ -67,8 +70,8 @@
         </div>
 
         <div class="profile-actions">
-          <button class="btn btn-outline btn-sm">Edit Profile</button>
-          <button class="btn btn-primary btn-sm">Book Appointment</button>
+          <button class="btn btn-outline btn-sm" id="editProfileBtn">Edit Profile</button>
+          <!-- <button class="btn btn-primary btn-sm">Book Appointment</button> -->
         </div>
       </div>
 
@@ -240,9 +243,124 @@
         </div>
       </div>
 
+      <!-- ===================== ALL REGISTERED CHILDREN ===================== -->
+      <div class="card section-card" id="allChildrenSection">
+        <div class="section-head">
+          <div>
+            <div class="chart-title">All Registered Children</div>
+            <div class="chart-subtitle">Every child on file &middot; click a row to open the full profile above</div>
+          </div>
+          <a class="btn btn-primary btn-sm" href="../registerchild/registerchild.html">+ Register Child</a>
+        </div>
+
+        <div class="table-filters" id="tableFilters">
+          <div class="tf-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input type="text" id="searchInput" placeholder="Search by name, ID, parent or phone...">
+          </div>
+          <select id="genderFilter">
+            <option value="All">All Genders</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+          </select>
+          <select id="ageFilter">
+            <option value="All">All Ages</option>
+            <option>0-1 yr</option>
+            <option>1-3 yrs</option>
+            <option>3-5 yrs</option>
+            <option>5+ yrs</option>
+          </select>
+          <select id="bloodFilter">
+            <option value="All">All Blood Groups</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option>
+            <option>O+</option><option>O-</option>
+            <option>Unknown</option>
+          </select>
+          <select id="vaccStatusFilter">
+            <option value="All">All Vaccination Status</option>
+            <option>Completed</option>
+            <option>Due</option>
+            <option>Pending</option>
+            <option>Overdue</option>
+          </select>
+          <button class="btn btn-outline btn-sm" id="resetFiltersBtn">Reset</button>
+        </div>
+
+        <div class="filter-status" id="filterStatus"></div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Child</th>
+                <th>Patient ID</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Parent</th>
+                <th>Phone</th>
+                <th>Vaccination</th>
+                <th>Registered</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="childrenTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="table-footer">
+          <div class="rows-info" id="rowsInfo"></div>
+          <div class="table-footer-right">
+            <div class="page-size">
+              <label for="pageSizeSelect">Rows</label>
+              <select id="pageSizeSelect">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+              </select>
+            </div>
+            <div class="pagination" id="pagination"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
+</div>
+
+<!-- ============ CHILD VIEW / EDIT OVERLAY ============ -->
+<div class="modal-overlay" id="childModalOverlay">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <div class="chart-title" id="modalTitle">Child Details</div>
+        <div class="chart-subtitle" id="modalSubtitle"></div>
+      </div>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" id="modalCancelBtn">Close</button>
+      <button class="btn btn-outline" id="modalEditToggleBtn">Edit</button>
+      <button class="btn btn-primary" id="modalSaveBtn" hidden>Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DELETE CONFIRMATION OVERLAY ============ -->
+<div class="logout-overlay" id="deleteOverlay">
+  <div class="logout-modal">
+    <div class="logout-modal-icon" id="deleteModalIcon"></div>
+    <h3>Remove this record?</h3>
+    <p id="deleteModalText">Are you sure you want to remove this child's record? This cannot be undone.</p>
+    <div class="logout-modal-actions">
+      <button class="btn btn-outline" id="deleteCancelBtn">Cancel</button>
+      <button class="btn btn-danger" id="deleteConfirmBtn">Remove</button>
+    </div>
+  </div>
 </div>
 
 <!-- ============ LOGOUT CONFIRMATION OVERLAY ============ -->

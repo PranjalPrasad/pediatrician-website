@@ -46,13 +46,62 @@ const sidebarItems = [
 const currentPage = (location.pathname.split("/").pop() || "registerchild.html").toLowerCase();
 
 /* =========================================================
-   HEADER META
+   LOGGED-IN USER — reads the SAME storage auth.js writes to.
+   auth.js exposes: isAuthenticated(), login(), logout(),
+   protectPage(), getCurrentUser() (storage key: "clinicUser").
+   NOTE: earlier versions of this file defined their OWN
+   getCurrentUser() against a different key ("currentUser"),
+   which silently overrode auth.js's version and is why the
+   profile box and logout never reflected the real session.
+   That local override has been removed — we call auth.js's
+   getCurrentUser() directly.
 ========================================================= */
-document.getElementById("headerMeta").innerHTML = `
-  <span>${ICON.calendar} July 7, 2026</span>
-  <span>${ICON.user} Dr. Ananya Sharma</span>
-  <span>${ICON.activity} Sunshine Pediatric Clinic</span>
-`;
+function initialsFromName(name) {
+  if (!name) return "DR";
+  return name
+    .replace(/^Dr\.?\s*/i, "")
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(w => w[0].toUpperCase())
+    .join("");
+}
+
+function currentClinicUser() {
+  const fallback = { name: "Doctor", email: "", role: "" };
+  if (typeof window.getCurrentUser === "function") {
+    return window.getCurrentUser() || fallback;
+  }
+  return fallback;
+}
+
+const currentUser = currentClinicUser();
+const CLINIC_NAME = "Sunshine Pediatric Clinic";
+
+/* =========================================================
+   HEADER META (dynamic date + dynamic user/clinic)
+========================================================= */
+function renderHeaderMeta() {
+  const todayStr = new Date().toLocaleDateString("en-IN", {
+    year: "numeric", month: "long", day: "numeric"
+  });
+  document.getElementById("headerMeta").innerHTML = `
+    <span>${ICON.calendar} ${todayStr}</span>
+    <span>${ICON.user} ${currentUser.name || "Doctor"}</span>
+    <span>${ICON.activity} ${CLINIC_NAME}</span>
+  `;
+}
+renderHeaderMeta();
+
+/* =========================================================
+   SIDEBAR PROFILE (dynamic)
+========================================================= */
+function renderSidebarProfile() {
+  document.getElementById("profileAvatar").textContent = initialsFromName(currentUser.name);
+  document.getElementById("profileName").textContent = currentUser.name || "";
+  document.getElementById("profileEmail").textContent = currentUser.email || "";
+}
+renderSidebarProfile();
 
 /* =========================================================
    SIDEBAR NAV RENDER
@@ -116,26 +165,82 @@ sidebarItems.forEach(item => {
   sidebarNav.appendChild(group);
 });
 
-/* sidebar toggle */
+/* =========================================================
+   SIDEBAR OPEN/CLOSE (default open on load, responsive drawer on mobile)
+========================================================= */
 const sidebar = document.getElementById("sidebar");
+const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+const MOBILE_BREAKPOINT = 760;
+
+function isMobile() {
+  return window.innerWidth <= MOBILE_BREAKPOINT;
+}
+
+function syncBackdrop() {
+  const shouldShow = isMobile() && sidebar.classList.contains("expanded");
+  sidebarBackdrop.classList.toggle("show", shouldShow);
+}
+
+function openSidebar() {
+  sidebar.classList.add("expanded");
+  syncBackdrop();
+}
+
+function closeSidebar() {
+  sidebar.classList.remove("expanded");
+  syncBackdrop();
+}
+
+// Sidebar is expanded by default on every page load (desktop and mobile).
+openSidebar();
+
 document.getElementById("sidebarToggle").addEventListener("click", () => {
-  sidebar.classList.toggle("expanded");
+  sidebar.classList.contains("expanded") ? closeSidebar() : openSidebar();
 });
 
+// Tapping the backdrop (mobile) closes the drawer, like a standard nav drawer.
+sidebarBackdrop.addEventListener("click", closeSidebar);
+
+window.addEventListener("resize", syncBackdrop);
+
 /* =========================================================
-   LOGOUT OVERLAY
+   LOGOUT OVERLAY — delegates to auth.js's logout()
 ========================================================= */
 const logoutOverlay = document.getElementById("logoutOverlay");
 document.querySelector("#logoutOverlay .logout-modal-icon").innerHTML = ICON.logout;
 
-function openLogoutOverlay(){ logoutOverlay.classList.add("show"); }
-function closeLogoutOverlay(){ logoutOverlay.classList.remove("show"); }
+function openLogoutOverlay() { logoutOverlay.classList.add("show"); }
+function closeLogoutOverlay() { logoutOverlay.classList.remove("show"); }
 
 document.getElementById("logoutCancelBtn").addEventListener("click", closeLogoutOverlay);
 logoutOverlay.addEventListener("click", (e) => { if (e.target === logoutOverlay) closeLogoutOverlay(); });
-document.getElementById("logoutConfirmBtn").addEventListener("click", () => { 
-    logout(); 
+
+document.getElementById("logoutConfirmBtn").addEventListener("click", () => {
+  performLogout();
 });
+
+/**
+ * performLogout()
+ * Always prefers the real logout() defined in auth.js, which
+ * clears the correct keys ("isLoggedIn" / "clinicUser") and
+ * redirects to index.html. Falls back to the same keys/redirect
+ * only if auth.js somehow failed to load, so the button never
+ * silently fails and never disagrees with auth.js about storage.
+ */
+function performLogout() {
+  if (typeof window.logout === "function") {
+    window.logout();
+    return;
+  }
+  console.warn("logout() was not found on window (auth.js not loaded). Using fallback logout.");
+  try {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("clinicUser");
+    sessionStorage.clear();
+  } catch (e) { /* ignore storage errors */ }
+  window.location.replace("index.html");
+}
+
 /* =========================================================
    REGISTRATION STEPPER
 ========================================================= */
@@ -229,6 +334,7 @@ document.getElementById("logoutConfirmBtn").addEventListener("click", () => {
   });
 
   /* Photo upload preview */
+  let photoDataUrl = null;
   const photoBox = document.getElementById("photoBox");
   const photoInput = document.getElementById("childPhoto");
   const photoPreview = document.getElementById("photoPreview");
@@ -239,7 +345,8 @@ document.getElementById("logoutConfirmBtn").addEventListener("click", () => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
-      photoPreview.src = e.target.result;
+      photoDataUrl = e.target.result;
+      photoPreview.src = photoDataUrl;
       photoPreview.hidden = false;
       photoPlaceholder.hidden = true;
     };
@@ -357,10 +464,98 @@ document.getElementById("logoutConfirmBtn").addEventListener("click", () => {
     });
   }
 
+  /* =========================================================
+     SAVE — writes the finished registration into the SAME
+     localStorage key ("pedClinicChildren") that the All
+     Children page (childp.js) reads, so a new registration
+     shows up there immediately without any extra wiring.
+  ========================================================= */
+  const STORE_KEY = "pedClinicChildren";
+
+  function loadStoredChildren() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      const list = raw ? JSON.parse(raw) : [];
+      return Array.isArray(list) ? list : [];
+    } catch (e) {
+      console.warn("Could not read children store:", e);
+      return [];
+    }
+  }
+
+  function collectVaccinesFromTable() {
+    const vaccines = [];
+    vaccineBody.querySelectorAll("tr").forEach(row => {
+      const cells = row.querySelectorAll("input, select");
+      const [name, due, given, doctor, status, nextDue] = cells;
+      if (!name.value) return;
+      vaccines.push({
+        name: name.value, due: due.value, given: given.value,
+        doctor: doctor.value, status: status.value, nextDue: nextDue.value
+      });
+    });
+    return vaccines;
+  }
+
+  function buildChildRecord() {
+    const height = val("height");
+    const weight = val("weight");
+    return {
+      id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `child-${Date.now()}`,
+      patientId: val("patientId"),
+      name: val("childName"),
+      gender: val("gender"),
+      dob: val("dob"),
+      age: val("age"),
+      bloodGroup: val("bloodGroup"),
+      parentName: val("parentName"),
+      fatherName: val("fatherName"),
+      motherName: val("motherName"),
+      mobile: val("mobile"),
+      email: val("email"),
+      emergencyContact: val("emergencyContact"),
+      address: val("address"),
+      photo: photoDataUrl,
+      birthWeight: val("birthWeight"),
+      deliveryType: val("deliveryType"),
+      premature: val("premature"),
+      pastIllness: val("pastIllness"),
+      allergies: val("allergies"),
+      hospitalAdmission: val("hospitalAdmission"),
+      currentMedicines: val("currentMedicines"),
+      chronicDisease: val("chronicDisease"),
+      familyDisease: val("familyDisease"),
+      milestones: val("milestones"),
+      height: height, weight: weight, bmi: val("bmi"), headCirc: val("headCirc"), growthNotes: val("growthNotes"),
+      vaccines: collectVaccinesFromTable(),
+      growthHistory: (height && weight) ? [{ date: new Date().toISOString().slice(0,10), h: Number(height), w: Number(weight), bmi: val("bmi"), doctor: currentUser.name || "Front Desk" }] : [],
+      appointments: [],
+      consultations: [],
+      prescriptions: [],
+      documents: [],
+      billing: [],
+      registeredDate: new Date().toISOString().slice(0, 10)
+    };
+  }
+
   form.addEventListener("submit", e => {
     e.preventDefault();
+
+    const list = loadStoredChildren();
+    const record = buildChildRecord();
+    list.unshift(record);
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(list));
+    } catch (err) {
+      console.error("Could not save child record:", err);
+      showToast("Could not save — storage error");
+      return;
+    }
+
     showToast("Child registered successfully");
-    setTimeout(() => { alert("Saved! Redirecting to Child Profile..."); }, 600);
+    setTimeout(() => {
+      window.location.href = "../all-children/childp.html";
+    }, 700);
   });
 
   goToStep(1);

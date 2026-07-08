@@ -13,6 +13,9 @@
 
 <div class="dashboard">
 
+  <!-- ============ SIDEBAR BACKDROP (mobile overlay) ============ -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
   <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
@@ -132,6 +135,43 @@
           </div>
         </div>
 
+        <!-- ADVANCED FILTERS -->
+        <div class="filter-row">
+          <div class="filter-field">
+            <label class="form-label" for="filterDoctor">Doctor</label>
+            <select class="form-select" id="filterDoctor"></select>
+          </div>
+          <div class="filter-field">
+            <label class="form-label" for="filterPriority">Priority</label>
+            <select class="form-select" id="filterPriority">
+              <option value="All">All Priorities</option>
+              <option value="Routine">Routine</option>
+              <option value="Urgent">Urgent</option>
+              <option value="Emergency">Emergency</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label class="form-label" for="filterDateFrom">From Date</label>
+            <input class="form-input" type="date" id="filterDateFrom">
+          </div>
+          <div class="filter-field">
+            <label class="form-label" for="filterDateTo">To Date</label>
+            <input class="form-input" type="date" id="filterDateTo">
+          </div>
+          <div class="filter-field">
+            <label class="form-label" for="pageSizeSelect">Rows / page</label>
+            <select class="form-select" id="pageSizeSelect">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="25">25</option>
+            </select>
+          </div>
+          <div class="filter-field filter-reset-wrap">
+            <label class="form-label">&nbsp;</label>
+            <button type="button" class="btn btn-outline" id="resetFiltersBtn">Reset Filters</button>
+          </div>
+        </div>
+
         <div class="table-wrap">
           <table class="appt-table">
             <thead>
@@ -147,6 +187,9 @@
             <tbody id="apptTableBody"></tbody>
           </table>
         </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrap" id="paginationWrap"></div>
       </div>
     </div>
   </div>

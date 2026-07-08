@@ -13,24 +13,28 @@
 
 <div class="dashboard">
 
+  <!-- Backdrop shown behind sidebar on small screens -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
   <!-- ============ SIDEBAR ============ -->
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar expanded" id="sidebar">
     <div class="sidebar-header">
       <button class="logo" id="sidebarToggle" title="Toggle menu" aria-label="Toggle sidebar menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="#6C63FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2l4 4-3 3 2 2-9 9-4-4 9-9 2 2 3-3"/><path d="M8 15l1 1"/></svg>
       </button>
       <div class="brand-logo">
-        <img src="/logo.png" alt="Sunshine Pediatric Clinic logo" onerror="this.style.display='none'">
+        <img src="/logo.png" alt="Clinic logo" onerror="this.style.display='none'">
+        <!-- <span id="brandName"></span> -->
       </div>
     </div>
     <!-- nav items injected by JS -->
     <div id="sidebarNav"></div>
 
     <div class="sidebar-profile" id="sidebarProfile">
-      <div class="avatar">AS</div>
+      <div class="avatar" id="profileAvatar"></div>
       <div>
-        <div class="profile-name">Dr. Ananya Sharma</div>
-        <div class="profile-email">ananya.sharma@clinic.com</div>
+        <div class="profile-name" id="profileName"></div>
+        <div class="profile-email" id="profileEmail"></div>
       </div>
     </div>
   </aside>

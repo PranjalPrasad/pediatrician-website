@@ -47,7 +47,7 @@ const sidebarItems = [
   { type: "action", icon: ICON.logout,      label: "Logout",            action: "logout" }
 ];
 
-const currentPage = (location.pathname.split("/").pop() || "appointment.html").toLowerCase();
+const currentPage2 = (location.pathname.split("/").pop() || "appointment.html").toLowerCase();
 
 const sidebarNav = document.getElementById("sidebarNav");
 sidebarNav.style.display = "contents";
@@ -55,7 +55,7 @@ sidebarNav.style.display = "contents";
 sidebarItems.forEach(item => {
   if (item.type === "link") {
     const a = document.createElement("a");
-    const isActive = item.href.toLowerCase() === currentPage;
+    const isActive = item.href.toLowerCase() === currentPage2;
     a.className = "nav-item" + (isActive ? " active" : "");
     a.href = item.href;
     a.title = item.label;
@@ -63,19 +63,19 @@ sidebarItems.forEach(item => {
     sidebarNav.appendChild(a);
     return;
   }
-if (item.type === "action") {
+  if (item.type === "action") {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "nav-item";
     btn.title = item.label;
     btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-    btn.addEventListener("click", () => { 
-        if (item.action === "logout") logout();   // ← Updated
+    btn.addEventListener("click", () => {
+      if (item.action === "logout") performLogout();
     });
     sidebarNav.appendChild(btn);
     return;
-}
-  const childActive = item.children.some(c => c.href.toLowerCase() === currentPage);
+  }
+  const childActive = item.children.some(c => c.href.toLowerCase() === currentPage2);
   const group = document.createElement("div");
   group.className = "nav-group" + (childActive ? " open" : "");
   const parent = document.createElement("button");
@@ -91,7 +91,7 @@ if (item.type === "action") {
   submenu.className = "nav-submenu";
   item.children.forEach(c => {
     const a = document.createElement("a");
-    const isActive = c.href.toLowerCase() === currentPage;
+    const isActive = c.href.toLowerCase() === currentPage2;
     a.className = "nav-subitem" + (isActive ? " active" : "");
     a.href = c.href;
     a.innerHTML = `<span class="dot-sm"></span>${c.label}`;
@@ -102,8 +102,48 @@ if (item.type === "action") {
   sidebarNav.appendChild(group);
 });
 
+/* =========================================================
+   SIDEBAR OPEN/CLOSE — open by default on load, toggle on
+   the corner icon to open/close, backdrop closes it on mobile
+========================================================= */
 const sidebar = document.getElementById("sidebar");
-document.getElementById("sidebarToggle").addEventListener("click", () => sidebar.classList.toggle("expanded"));
+const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+
+sidebar.classList.add("expanded");
+sidebarBackdrop.classList.add("show");
+
+document.getElementById("sidebarToggle").addEventListener("click", () => {
+  sidebar.classList.toggle("expanded");
+  sidebarBackdrop.classList.toggle("show");
+});
+
+sidebarBackdrop.addEventListener("click", () => {
+  sidebar.classList.remove("expanded");
+  sidebarBackdrop.classList.remove("show");
+});
+
+/* =========================================================
+   LOGOUT — safe wrapper around the global logout() from
+   auth.js, with a confirm step and a working fallback
+========================================================= */
+function performLogout(){
+  const confirmed = window.confirm("Are you sure you want to logout?");
+  if (!confirmed) return;
+
+  try {
+    if (typeof logout === "function") {
+      logout();
+    } else {
+      sessionStorage.clear();
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("token");
+      window.location.href = "../login.html";
+    }
+  } catch (err) {
+    console.error("Logout failed:", err);
+    window.location.href = "../login.html";
+  }
+}
 
 /* =========================================================
    HEADER META
@@ -252,6 +292,7 @@ bookingForm.addEventListener("submit", (e) => {
     notes
   });
 
+  currentPage = 1;
   renderKPIs();
   renderTable();
   showToast(`Appointment booked for ${bookedPatient.name} with ${doctor}`);
@@ -263,22 +304,91 @@ bookingForm.addEventListener("submit", (e) => {
 document.getElementById("clearFormBtn").addEventListener("click", resetBookingForm);
 
 /* =========================================================
-   APPOINTMENT LIST — search + status tabs + actions
+   APPOINTMENT LIST — search + status tabs + advanced
+   filters + pagination
 ========================================================= */
 let activeStatus = "All";
+let filterDoctor = "All";
+let filterPriority = "All";
+let filterDateFrom = "";
+let filterDateTo = "";
+let currentPage = 1;
+let pageSize = 5;
+
 const listSearchInput = document.getElementById("listSearch");
 const statusTabs = document.querySelectorAll(".status-tab");
+const filterDoctorSelect = document.getElementById("filterDoctor");
+const filterPrioritySelect = document.getElementById("filterPriority");
+const filterDateFromInput = document.getElementById("filterDateFrom");
+const filterDateToInput = document.getElementById("filterDateTo");
+const pageSizeSelect = document.getElementById("pageSizeSelect");
+const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+
+filterDoctorSelect.innerHTML = `<option value="All">All Doctors</option>` + doctors.map(d => `<option value="${d}">${d}</option>`).join("");
 
 statusTabs.forEach(tab => {
   tab.addEventListener("click", () => {
     statusTabs.forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     activeStatus = tab.getAttribute("data-status");
+    currentPage = 1;
     renderTable();
   });
 });
 
-listSearchInput.addEventListener("input", renderTable);
+listSearchInput.addEventListener("input", () => {
+  currentPage = 1;
+  renderTable();
+});
+
+filterDoctorSelect.addEventListener("change", () => {
+  filterDoctor = filterDoctorSelect.value;
+  currentPage = 1;
+  renderTable();
+});
+
+filterPrioritySelect.addEventListener("change", () => {
+  filterPriority = filterPrioritySelect.value;
+  currentPage = 1;
+  renderTable();
+});
+
+filterDateFromInput.addEventListener("change", () => {
+  filterDateFrom = filterDateFromInput.value;
+  currentPage = 1;
+  renderTable();
+});
+
+filterDateToInput.addEventListener("change", () => {
+  filterDateTo = filterDateToInput.value;
+  currentPage = 1;
+  renderTable();
+});
+
+pageSizeSelect.addEventListener("change", () => {
+  pageSize = Number(pageSizeSelect.value);
+  currentPage = 1;
+  renderTable();
+});
+
+resetFiltersBtn.addEventListener("click", () => {
+  listSearchInput.value = "";
+  activeStatus = "All";
+  statusTabs.forEach(t => t.classList.remove("active"));
+  document.querySelector('.status-tab[data-status="All"]').classList.add("active");
+
+  filterDoctor = "All";
+  filterPriority = "All";
+  filterDateFrom = "";
+  filterDateTo = "";
+  filterDoctorSelect.value = "All";
+  filterPrioritySelect.value = "All";
+  filterDateFromInput.value = "";
+  filterDateToInput.value = "";
+
+  currentPage = 1;
+  renderTable();
+});
 
 function initials(name){
   return name.split(" ").map(n => n[0]).slice(0,2).join("").toUpperCase();
@@ -286,25 +396,39 @@ function initials(name){
 
 function renderTable(){
   const q = listSearchInput.value.trim().toLowerCase();
+
   let rows = appointments.filter(a => {
     const statusMatch = activeStatus === "All" || a.status === activeStatus;
     const searchMatch = !q ||
       a.patient.name.toLowerCase().includes(q) ||
       a.doctor.toLowerCase().includes(q) ||
       a.patient.id.toLowerCase().includes(q);
-    return statusMatch && searchMatch;
+    const doctorMatch = filterDoctor === "All" || a.doctor === filterDoctor;
+    const priorityMatch = filterPriority === "All" || a.priority === filterPriority;
+    const dateFromMatch = !filterDateFrom || a.date >= filterDateFrom;
+    const dateToMatch = !filterDateTo || a.date <= filterDateTo;
+    return statusMatch && searchMatch && doctorMatch && priorityMatch && dateFromMatch && dateToMatch;
   });
 
   rows = rows.slice().sort((a, b) => (a.date + a.time < b.date + b.time ? 1 : -1));
 
+  const totalItems = rows.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  const startIdx = (currentPage - 1) * pageSize;
+  const pageRows = rows.slice(startIdx, startIdx + pageSize);
+
   const tbody = document.getElementById("apptTableBody");
 
-  if (!rows.length){
+  if (!pageRows.length){
     tbody.innerHTML = `<tr class="empty-row"><td colspan="6">No appointments match this filter.</td></tr>`;
+    renderPagination(0, 1);
     return;
   }
 
-  tbody.innerHTML = rows.map(a => `
+  tbody.innerHTML = pageRows.map(a => `
     <tr>
       <td>
         <div class="patient-cell">
@@ -328,6 +452,52 @@ function renderTable(){
       </td>
     </tr>
   `).join("");
+
+  renderPagination(totalItems, totalPages);
+}
+
+function renderPagination(totalItems, totalPages){
+  const wrap = document.getElementById("paginationWrap");
+  if (!totalItems){
+    wrap.innerHTML = `<div class="pagination-info">No appointments to show</div>`;
+    return;
+  }
+
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalItems);
+
+  const maxButtons = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+  let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+  startPage = Math.max(1, endPage - maxButtons + 1);
+
+  let pageButtons = "";
+  for (let p = startPage; p <= endPage; p++){
+    pageButtons += `<button class="page-btn${p === currentPage ? " active" : ""}" data-page="${p}">${p}</button>`;
+  }
+
+  wrap.innerHTML = `
+    <div class="pagination-info">Showing ${startItem}-${endItem} of ${totalItems} appointments</div>
+    <div class="pagination-controls">
+      <button class="page-btn" id="prevPageBtn" ${currentPage === 1 ? "disabled" : ""}>Prev</button>
+      ${startPage > 1 ? `<button class="page-btn" data-page="1">1</button>${startPage > 2 ? '<span class="page-ellipsis">…</span>' : ""}` : ""}
+      ${pageButtons}
+      ${endPage < totalPages ? `${endPage < totalPages - 1 ? '<span class="page-ellipsis">…</span>' : ""}<button class="page-btn" data-page="${totalPages}">${totalPages}</button>` : ""}
+      <button class="page-btn" id="nextPageBtn" ${currentPage === totalPages ? "disabled" : ""}>Next</button>
+    </div>
+  `;
+
+  wrap.querySelectorAll(".page-btn[data-page]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentPage = Number(btn.getAttribute("data-page"));
+      renderTable();
+    });
+  });
+
+  const prevBtn = document.getElementById("prevPageBtn");
+  const nextBtn = document.getElementById("nextPageBtn");
+  if (prevBtn) prevBtn.addEventListener("click", () => { if (currentPage > 1){ currentPage--; renderTable(); } });
+  if (nextBtn) nextBtn.addEventListener("click", () => { if (currentPage < totalPages){ currentPage++; renderTable(); } });
 }
 
 function formatDate(iso){
@@ -493,6 +663,7 @@ function openDeleteModal(appt){
   document.getElementById("modalCancelBtn").addEventListener("click", closeModal);
   document.getElementById("modalDeleteBtn").addEventListener("click", () => {
     appointments = appointments.filter(a => a.id !== appt.id);
+    currentPage = 1;
     renderKPIs();
     renderTable();
     closeModal();
@@ -516,5 +687,6 @@ function showToast(message){
    INIT
 ========================================================= */
 document.getElementById("dateInput").min = "2026-07-07";
+pageSizeSelect.value = String(pageSize);
 renderKPIs();
 renderTable();
