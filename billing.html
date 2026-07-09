@@ -179,17 +179,10 @@
   .btn-success:hover{ opacity:0.9; }
   .btn[disabled]{ opacity:0.5; cursor:not-allowed; pointer-events:none; }
 
-  /* ============ INVOICE PREVIEW ============ */
-  .invoice-preview{ padding:22px; }
-  .invoice-preview-head{
-    display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;
-  }
-  .invoice-no{ font-size:12px; color:var(--muted); }
-  .invoice-no strong{ color:var(--text); }
-
+  /* ============ PATIENT SEARCH ============ */
   .patient-search{
     position:relative;
-    margin-bottom:16px;
+    margin-bottom:6px;
   }
   .patient-search-input{
     width:100%;
@@ -205,9 +198,37 @@
     position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--muted);
   }
 
+  .patient-search-results{ position:relative; margin-bottom:18px; }
+  .search-dropdown{
+    position:absolute; top:4px; left:0; right:0; background:#fff; border:1px solid var(--border);
+    border-radius:12px; box-shadow:0 12px 30px rgba(36,30,61,0.12); z-index:20;
+    max-height:230px; overflow-y:auto;
+  }
+  .search-dropdown-item{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; cursor:pointer; transition:background 0.15s ease;
+  }
+  .search-dropdown-item:hover{ background:var(--hover); }
+  .search-dropdown-item .patient-avatar{ width:30px; height:30px; font-size:11px; }
+  .search-dropdown-item .sdi-name{ font-size:13px; font-weight:600; color:var(--text); }
+  .search-dropdown-item .sdi-meta{ font-size:11px; color:var(--muted); }
+  .search-dropdown-empty{ padding:16px 10px; font-size:12.5px; color:var(--muted); text-align:center; }
+
+  /* ============ EMPTY STATE ============ */
+  .empty-state{
+    padding:34px 16px; text-align:center; color:var(--muted); font-size:13px;
+    border:1.5px dashed var(--border); border-radius:14px; background:var(--bg);
+  }
+  .empty-state .empty-icon{
+    width:40px; height:40px; border-radius:50%; background:var(--hover); color:var(--primary);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 12px auto;
+  }
+  .empty-state .empty-icon svg{ width:19px; height:19px; }
+  .empty-state strong{ color:var(--text); display:block; margin-bottom:3px; font-size:13.5px; }
+
+  /* ============ SELECTED PATIENT ============ */
   .patient-card{
     display:flex; align-items:center; gap:12px;
-    padding:12px; border-radius:12px; background:var(--bg); margin-bottom:16px;
+    padding:12px; border-radius:12px; background:var(--bg); margin-bottom:6px;
   }
   .patient-avatar{
     width:42px; height:42px; border-radius:50%; background:var(--hover); color:var(--primary);
@@ -215,11 +236,62 @@
   }
   .patient-name{ font-size:13.5px; font-weight:600; color:var(--text); }
   .patient-meta{ font-size:11.5px; color:var(--muted); }
+  .change-patient-btn{
+    margin-left:auto; font-size:11.5px; font-weight:600; color:var(--primary);
+    background:#fff; border:1px solid var(--border); border-radius:8px; padding:6px 10px; cursor:pointer; flex-shrink:0;
+  }
+  .change-patient-btn:hover{ background:var(--hover); }
+
+  /* ============ BILLABLE ITEMS ============ */
+  .items-section-head{ display:flex; align-items:center; justify-content:space-between; margin:18px 0 6px 0; }
+  .items-section-head > span{ font-size:11.5px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.4px; }
+  .link-btn{ background:none; border:none; color:var(--primary); font-size:12.5px; font-weight:600; cursor:pointer; }
+  .link-btn:hover{ text-decoration:underline; }
+
+  .items-list{ border:1px solid var(--border); border-radius:12px; overflow:hidden; }
+  .item-row{ display:flex; align-items:center; gap:10px; padding:10px 10px; background:#fff; transition:background 0.15s ease; }
+  .item-row + .item-row{ border-top:1px solid var(--border); }
+  .item-row:hover{ background:var(--bg); }
+  .item-row.excluded{ opacity:0.45; }
+  .item-check input{ width:16px; height:16px; accent-color:var(--primary); cursor:pointer; }
+  .item-info{ flex:1; min-width:0; }
+  .item-label{ font-size:13px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .item-label-input{
+    font-size:13px; font-weight:500; color:var(--text); border:none; background:transparent;
+    border-bottom:1px dashed var(--border); width:100%; padding:2px 0;
+  }
+  .item-label-input:focus{ outline:none; border-color:var(--primary); }
+  .item-meta{ font-size:11px; color:var(--muted); margin-top:3px; display:flex; align-items:center; gap:6px; }
+  .type-badge{ font-size:9.5px; font-weight:700; text-transform:uppercase; padding:2px 7px; border-radius:999px; letter-spacing:0.3px; }
+  .type-badge.consultation{ background:rgba(79,142,247,0.12); color:var(--secondary); }
+  .type-badge.vaccination{ background:rgba(167,139,250,0.18); color:#7C5CD8; }
+  .type-badge.medicine{ background:rgba(20,184,166,0.12); color:var(--success); }
+  .type-badge.custom{ background:rgba(139,133,166,0.14); color:var(--muted); }
+  .item-amount-wrap{ width:104px; flex-shrink:0; }
+  .item-amount-wrap .field-input{ padding:7px 8px 7px 20px; font-size:12.5px; }
+  .item-amount-wrap .field-currency{ left:8px; font-size:12px; }
+  .item-remove{
+    width:26px; height:26px; border-radius:8px; border:none; background:transparent; color:var(--muted);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .item-remove svg{ width:13px; height:13px; }
+  .item-remove:hover{ background:rgba(255,111,145,0.12); color:var(--danger); }
+  .items-empty{ font-size:12.5px; color:var(--muted); padding:16px; text-align:center; }
+
+  /* ============ INVOICE PREVIEW ============ */
+  .invoice-preview{ padding:22px; }
+  .invoice-preview-head{
+    display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;
+  }
+  .invoice-no{ font-size:12px; color:var(--muted); }
+  .invoice-no strong{ color:var(--text); }
 
   .invoice-line{
-    display:flex; align-items:center; justify-content:space-between;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:9px 0; font-size:13px; color:var(--text); border-bottom:1px dashed var(--border);
   }
+  .invoice-line span:first-child{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .invoice-line span:last-child{ flex-shrink:0; }
   .invoice-line:last-of-type{ border-bottom:none; }
   .invoice-line.muted{ color:var(--muted); }
   .invoice-line.discount{ color:var(--danger); }
@@ -325,77 +397,76 @@
 
       <div class="billing-layout">
 
-        <!-- INVOICE FORM -->
+        <!-- NEW INVOICE -->
         <div class="card panel">
           <div class="panel-title">New Invoice</div>
-          <div class="panel-sub">Enter charges to calculate the grand total</div>
+          <div class="panel-sub">Select a patient to load their charges, then review before billing</div>
 
-          <div class="field-row">
-            <div>
-              <div class="field-label">Consultation Fee</div>
-              <div class="field-hint">Doctor visit charge</div>
-            </div>
-            <div class="field-input-wrap">
-              <span class="field-currency">₹</span>
-              <input type="number" min="0" class="field-input" id="consultationFee" value="500">
-            </div>
+          <div class="patient-search">
+            <span id="searchIconSlot"></span>
+            <input type="text" class="patient-search-input" id="patientSearchInput" placeholder="Search patient by name or ID" autocomplete="off">
+          </div>
+          <div class="patient-search-results" id="patientSearchResults"></div>
+
+          <!-- Shown until a patient is chosen -->
+          <div class="empty-state" id="noPatientState">
+            <div class="empty-icon" id="noPatientIcon"></div>
+            <strong>No patient selected</strong>
+            Search by name or patient ID above to start a new invoice.
           </div>
 
-          <div class="field-row">
-            <div>
-              <div class="field-label">Vaccination Fee</div>
-              <div class="field-hint">Vaccine + administration charge</div>
-            </div>
-            <div class="field-input-wrap">
-              <span class="field-currency">₹</span>
-              <input type="number" min="0" class="field-input" id="vaccinationFee" value="800">
-            </div>
-          </div>
+          <!-- Shown once a patient is chosen -->
+          <div id="billingWorkspace" style="display:none;">
 
-          <div class="field-row">
-            <div>
-              <div class="field-label">Medicine</div>
-              <div class="field-hint">Pharmacy / dispensed medicine</div>
+            <div class="patient-card" id="selectedPatientCard">
+              <div class="patient-avatar" id="patientInitials"></div>
+              <div>
+                <div class="patient-name" id="patientNameDisplay"></div>
+                <div class="patient-meta" id="patientMetaDisplay"></div>
+              </div>
+              <button class="change-patient-btn" id="changePatientBtn">Change</button>
             </div>
-            <div class="field-input-wrap">
-              <span class="field-currency">₹</span>
-              <input type="number" min="0" class="field-input" id="medicineFee" value="350">
-            </div>
-          </div>
 
-          <div class="field-row">
-            <div>
-              <div class="field-label">Discount</div>
-              <div class="field-hint">Applied before GST</div>
+            <div class="items-section-head">
+              <span>Charges for this patient</span>
+              <button class="link-btn" id="addCustomChargeBtn">+ Add custom charge</button>
             </div>
-            <div class="field-input-wrap">
-              <span class="field-currency">₹</span>
-              <input type="number" min="0" class="field-input" id="discount" value="100">
+            <div class="items-list" id="billableItemsList"></div>
+
+            <div class="field-row">
+              <div>
+                <div class="field-label">Discount</div>
+                <div class="field-hint">Applied before GST</div>
+              </div>
+              <div class="field-input-wrap">
+                <span class="field-currency">₹</span>
+                <input type="number" min="0" class="field-input" id="discount" value="0">
+              </div>
             </div>
-          </div>
 
-          <div class="field-row">
-            <div>
-              <div class="field-label">GST</div>
-              <div class="field-hint">Applied on taxable amount</div>
+            <div class="field-row">
+              <div>
+                <div class="field-label">GST</div>
+                <div class="field-hint">Applied on taxable amount</div>
+              </div>
+              <div class="field-input-wrap">
+                <input type="number" min="0" class="field-input percent" id="gstPercent" value="5">
+                <span class="field-percent-suffix">%</span>
+              </div>
             </div>
-            <div class="field-input-wrap">
-              <input type="number" min="0" class="field-input percent" id="gstPercent" value="5">
-              <span class="field-percent-suffix">%</span>
+
+            <div class="invoice-divider"></div>
+
+            <div class="grand-total-row">
+              <div class="grand-total-label">Grand Total</div>
+              <div class="grand-total-value" id="grandTotalDisplay">₹0</div>
             </div>
-          </div>
 
-          <div class="invoice-divider"></div>
-
-          <div class="grand-total-row">
-            <div class="grand-total-label">Grand Total</div>
-            <div class="grand-total-value" id="grandTotalDisplay">₹0</div>
-          </div>
-
-          <div class="panel-actions">
-            <button class="btn btn-primary" id="generateBtn"></button>
-            <button class="btn btn-outline" id="printInvoiceBtn" disabled></button>
-            <button class="btn btn-success" id="downloadInvoiceBtn" disabled></button>
+            <div class="panel-actions">
+              <button class="btn btn-primary" id="generateBtn"></button>
+              <button class="btn btn-outline" id="printInvoiceBtn" disabled></button>
+              <button class="btn btn-success" id="downloadInvoiceBtn" disabled></button>
+            </div>
           </div>
         </div>
 
@@ -403,32 +474,34 @@
         <div class="card invoice-preview">
           <div class="invoice-preview-head">
             <div class="panel-title" style="margin-bottom:0;">Invoice Preview</div>
-            <div class="invoice-no">Invoice No. <strong id="previewInvoiceNo">INV-1042</strong></div>
+            <div class="invoice-no">Invoice No. <strong id="previewInvoiceNo">—</strong></div>
           </div>
 
-          <div class="patient-search">
-            <span id="searchIconSlot"></span>
-            <input type="text" class="patient-search-input" id="patientSearchInput" placeholder="Search patient by name or ID" value="Aarav Mehta">
+          <div id="previewEmptyState" class="empty-state">
+            <div class="empty-icon" id="previewEmptyIcon"></div>
+            <strong>Nothing to preview yet</strong>
+            Select a patient and their charges to see the invoice here.
           </div>
 
-          <div class="patient-card">
-            <div class="patient-avatar" id="patientInitials">AM</div>
-            <div>
-              <div class="patient-name" id="patientNameDisplay">Aarav Mehta</div>
-              <div class="patient-meta" id="patientMetaDisplay">Patient ID: PED-1042 &middot; Age 3 yrs</div>
+          <div id="previewContent" style="display:none;">
+            <div class="patient-card">
+              <div class="patient-avatar" id="previewPatientInitials"></div>
+              <div>
+                <div class="patient-name" id="previewPatientName"></div>
+                <div class="patient-meta" id="previewPatientMeta"></div>
+              </div>
             </div>
-          </div>
 
-          <div class="invoice-line"><span>Consultation Fee</span><span id="lineConsult">₹500</span></div>
-          <div class="invoice-line"><span>Vaccination Fee</span><span id="lineVaccine">₹800</span></div>
-          <div class="invoice-line"><span>Medicine</span><span id="lineMedicine">₹350</span></div>
-          <div class="invoice-line muted"><span>Subtotal</span><span id="lineSubtotal">₹1650</span></div>
-          <div class="invoice-line discount"><span>Discount</span><span id="lineDiscount">- ₹100</span></div>
-          <div class="invoice-line muted"><span>GST (<span id="gstLabel">5</span>%)</span><span id="lineGst">₹78</span></div>
+            <div id="previewLineItems"></div>
 
-          <div class="invoice-total-final">
-            <span>Grand Total</span>
-            <span id="lineGrandTotal">₹1628</span>
+            <div class="invoice-line muted"><span>Subtotal</span><span id="lineSubtotal">₹0</span></div>
+            <div class="invoice-line discount"><span>Discount</span><span id="lineDiscount">- ₹0</span></div>
+            <div class="invoice-line muted"><span>GST (<span id="gstLabel">0</span>%)</span><span id="lineGst">₹0</span></div>
+
+            <div class="invoice-total-final">
+              <span>Grand Total</span>
+              <span id="lineGrandTotal">₹0</span>
+            </div>
           </div>
         </div>
 
@@ -505,7 +578,9 @@ const ICON = {
   plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`,
   search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>`,
   eye: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>`,
-  checkCircle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>`
+  checkCircle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>`,
+  x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`,
+  receiptSearch: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h5"/></svg>`
 };
 
 /* =========================================================
@@ -601,6 +676,8 @@ const sidebar = document.getElementById("sidebar");
 document.getElementById("sidebarToggle").addEventListener("click", () => sidebar.classList.toggle("expanded"));
 
 document.getElementById("searchIconSlot").outerHTML = `<span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--muted); display:flex;">${ICON.search}</span>`;
+document.getElementById("noPatientIcon").innerHTML = ICON.users;
+document.getElementById("previewEmptyIcon").innerHTML = ICON.receiptSearch;
 
 /* =========================================================
    LOGOUT
@@ -638,70 +715,264 @@ document.getElementById("downloadInvoiceBtn").innerHTML = `${ICON.download} Down
 function inr(n){
   return "₹" + Math.max(0, Math.round(n)).toLocaleString("en-IN");
 }
-
-/* =========================================================
-   INVOICE CALCULATION
-========================================================= */
-const consultationInput = document.getElementById("consultationFee");
-const vaccinationInput  = document.getElementById("vaccinationFee");
-const medicineInput     = document.getElementById("medicineFee");
-const discountInput     = document.getElementById("discount");
-const gstInput          = document.getElementById("gstPercent");
-
-function calcInvoice(){
-  const consultation = Number(consultationInput.value) || 0;
-  const vaccination   = Number(vaccinationInput.value) || 0;
-  const medicine       = Number(medicineInput.value) || 0;
-  const discount        = Number(discountInput.value) || 0;
-  const gstPct          = Number(gstInput.value) || 0;
-
-  const subtotal = consultation + vaccination + medicine;
-  const taxable  = Math.max(0, subtotal - discount);
-  const gstAmount = taxable * (gstPct / 100);
-  const grandTotal = taxable + gstAmount;
-
-  return { consultation, vaccination, medicine, discount, gstPct, subtotal, gstAmount, grandTotal };
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
 }
 
-function renderInvoicePreview(){
-  const { consultation, vaccination, medicine, discount, gstPct, subtotal, gstAmount, grandTotal } = calcInvoice();
+/* =========================================================
+   PATIENT DATA — each patient carries their own unbilled
+   charges (consultations, vaccinations, medicines) so the
+   biller sees exactly what this specific patient owes,
+   instead of guessing flat fee amounts.
+========================================================= */
+const patientRecords = {
+  "PED-1042": {
+    id: "PED-1042", name: "Aarav Mehta", age: 3, initials: "AM",
+    items: [
+      { id: "i1", type: "consultation", label: "Consultation — Dr. Ananya Sharma", date: "07 Jul 2026", amount: 500, selected: true },
+      { id: "i2", type: "vaccination",  label: "MMR Vaccine + Administration",     date: "07 Jul 2026", amount: 800, selected: true },
+      { id: "i3", type: "medicine",     label: "Paracetamol Syrup 60ml",           date: "07 Jul 2026", amount: 150, selected: true },
+      { id: "i4", type: "medicine",     label: "ORS Sachets (x5)",                 date: "07 Jul 2026", amount: 100, selected: true }
+    ]
+  },
+  "PED-1077": {
+    id: "PED-1077", name: "Ishita Rao", age: 5, initials: "IR",
+    items: [
+      { id: "i1", type: "consultation", label: "Follow-up Consultation",           date: "06 Jul 2026", amount: 400, selected: true },
+      { id: "i2", type: "medicine",     label: "Amoxicillin Suspension",           date: "06 Jul 2026", amount: 220, selected: true }
+    ]
+  },
+  "PED-1103": {
+    id: "PED-1103", name: "Kabir Shah", age: 2, initials: "KS",
+    items: [
+      { id: "i1", type: "vaccination",  label: "DTaP Booster + Administration",    date: "07 Jul 2026", amount: 950, selected: true },
+      { id: "i2", type: "consultation", label: "Pre-vaccination Checkup",          date: "07 Jul 2026", amount: 300, selected: true }
+    ]
+  },
+  "PED-1129": {
+    id: "PED-1129", name: "Ananya Iyer", age: 4, initials: "AI",
+    items: [
+      { id: "i1", type: "consultation", label: "Consultation — Dr. Ananya Sharma", date: "05 Jul 2026", amount: 500, selected: true }
+    ]
+  },
+  "PED-1156": {
+    id: "PED-1156", name: "Vihaan Gupta", age: 6, initials: "VG",
+    items: [
+      { id: "i1", type: "vaccination",  label: "Typhoid Vaccine + Administration", date: "07 Jul 2026", amount: 650, selected: true },
+      { id: "i2", type: "medicine",     label: "Multivitamin Syrup",               date: "07 Jul 2026", amount: 180, selected: true }
+    ]
+  }
+};
 
-  document.getElementById("lineConsult").textContent = inr(consultation);
-  document.getElementById("lineVaccine").textContent = inr(vaccination);
-  document.getElementById("lineMedicine").textContent = inr(medicine);
+const typeLabel = { consultation: "Consultation", vaccination: "Vaccination", medicine: "Medicine", custom: "Custom" };
+
+let selectedPatientId = null;
+let customItemCounter = 1;
+
+/* =========================================================
+   PATIENT SEARCH
+========================================================= */
+const patientSearchInput = document.getElementById("patientSearchInput");
+const patientSearchResults = document.getElementById("patientSearchResults");
+
+function renderSearchDropdown(query){
+  if (!query){ patientSearchResults.innerHTML = ""; return; }
+  const q = query.trim().toLowerCase();
+  const matches = Object.values(patientRecords).filter(p =>
+    p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q)
+  );
+
+  if (matches.length === 0){
+    patientSearchResults.innerHTML = `<div class="search-dropdown"><div class="search-dropdown-empty">No patient matches “${escapeHtml(query)}”</div></div>`;
+    return;
+  }
+
+  patientSearchResults.innerHTML = `<div class="search-dropdown">${matches.map(p => `
+    <div class="search-dropdown-item" data-id="${p.id}">
+      <div class="patient-avatar">${p.initials}</div>
+      <div>
+        <div class="sdi-name">${escapeHtml(p.name)}</div>
+        <div class="sdi-meta">${p.id} · Age ${p.age} yrs · ${p.items.filter(i=>i.selected!==false).length ? p.items.length + " unbilled charge" + (p.items.length>1?"s":"") : "no pending charges"}</div>
+      </div>
+    </div>
+  `).join("")}</div>`;
+
+  patientSearchResults.querySelectorAll(".search-dropdown-item").forEach(el => {
+    el.addEventListener("click", () => selectPatient(el.getAttribute("data-id")));
+  });
+}
+
+patientSearchInput.addEventListener("input", () => renderSearchDropdown(patientSearchInput.value));
+patientSearchInput.addEventListener("focus", () => renderSearchDropdown(patientSearchInput.value));
+document.addEventListener("click", (e) => {
+  if (!patientSearchInput.contains(e.target) && !patientSearchResults.contains(e.target)){
+    patientSearchResults.innerHTML = "";
+  }
+});
+
+function selectPatient(id){
+  if (!patientRecords[id]) return;
+  selectedPatientId = id;
+  patientSearchInput.value = "";
+  patientSearchResults.innerHTML = "";
+
+  document.getElementById("noPatientState").style.display = "none";
+  document.getElementById("billingWorkspace").style.display = "block";
+
+  const p = patientRecords[id];
+  document.getElementById("patientInitials").textContent = p.initials;
+  document.getElementById("patientNameDisplay").textContent = p.name;
+  document.getElementById("patientMetaDisplay").textContent = `Patient ID: ${p.id} · Age ${p.age} yrs`;
+
+  invoiceGenerated = false;
+  document.getElementById("printInvoiceBtn").setAttribute("disabled", "true");
+  document.getElementById("downloadInvoiceBtn").setAttribute("disabled", "true");
+
+  renderBillableItems();
+  updateAll();
+}
+
+document.getElementById("changePatientBtn").addEventListener("click", () => {
+  selectedPatientId = null;
+  document.getElementById("billingWorkspace").style.display = "none";
+  document.getElementById("noPatientState").style.display = "block";
+  patientSearchInput.focus();
+  updateAll();
+});
+
+/* =========================================================
+   BILLABLE ITEMS (per selected patient)
+========================================================= */
+function renderBillableItems(){
+  const listEl = document.getElementById("billableItemsList");
+  const p = patientRecords[selectedPatientId];
+  if (!p || p.items.length === 0){
+    listEl.innerHTML = `<div class="items-empty">No pending charges for this patient. Add a custom charge below if needed.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = p.items.map(item => `
+    <div class="item-row ${item.selected ? "" : "excluded"}" data-id="${item.id}">
+      <label class="item-check">
+        <input type="checkbox" ${item.selected ? "checked" : ""} data-role="toggle">
+      </label>
+      <div class="item-info">
+        ${item.type === "custom"
+          ? `<input type="text" class="item-label-input" value="${escapeHtml(item.label)}" data-role="label">`
+          : `<div class="item-label">${escapeHtml(item.label)}</div>`}
+        <div class="item-meta">
+          <span class="type-badge ${item.type}">${typeLabel[item.type]}</span>
+          <span>${item.date}</span>
+        </div>
+      </div>
+      <div class="field-input-wrap item-amount-wrap">
+        <span class="field-currency">₹</span>
+        <input type="number" min="0" class="field-input" value="${item.amount}" data-role="amount">
+      </div>
+      <button class="item-remove" title="Remove charge" data-role="remove">${ICON.x}</button>
+    </div>
+  `).join("");
+
+  listEl.querySelectorAll(".item-row").forEach(row => {
+    const itemId = row.getAttribute("data-id");
+    const item = p.items.find(i => i.id === itemId);
+
+    row.querySelector('[data-role="toggle"]').addEventListener("change", (e) => {
+      item.selected = e.target.checked;
+      row.classList.toggle("excluded", !item.selected);
+      updateAll();
+    });
+
+    row.querySelector('[data-role="amount"]').addEventListener("input", (e) => {
+      item.amount = Number(e.target.value) || 0;
+      updateAll();
+    });
+
+    const labelInput = row.querySelector('[data-role="label"]');
+    if (labelInput){
+      labelInput.addEventListener("input", (e) => {
+        item.label = e.target.value;
+        updateAll();
+      });
+    }
+
+    row.querySelector('[data-role="remove"]').addEventListener("click", () => {
+      p.items = p.items.filter(i => i.id !== itemId);
+      renderBillableItems();
+      updateAll();
+    });
+  });
+}
+
+document.getElementById("addCustomChargeBtn").addEventListener("click", () => {
+  if (!selectedPatientId) return;
+  const p = patientRecords[selectedPatientId];
+  p.items.push({
+    id: "custom" + (customItemCounter++),
+    type: "custom",
+    label: "New charge",
+    date: "07 Jul 2026",
+    amount: 0,
+    selected: true
+  });
+  renderBillableItems();
+  updateAll();
+});
+
+/* =========================================================
+   TOTALS + PREVIEW
+========================================================= */
+const discountInput = document.getElementById("discount");
+const gstInput = document.getElementById("gstPercent");
+[discountInput, gstInput].forEach(input => input.addEventListener("input", updateAll));
+
+function calcInvoice(){
+  const p = selectedPatientId ? patientRecords[selectedPatientId] : null;
+  const selectedItems = p ? p.items.filter(i => i.selected) : [];
+  const subtotal = selectedItems.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
+  const discount = Number(discountInput.value) || 0;
+  const gstPct = Number(gstInput.value) || 0;
+  const taxable = Math.max(0, subtotal - discount);
+  const gstAmount = taxable * (gstPct / 100);
+  const grandTotal = taxable + gstAmount;
+  return { p, selectedItems, subtotal, discount, gstPct, gstAmount, grandTotal };
+}
+
+function updateAll(){
+  const { p, selectedItems, subtotal, discount, gstPct, gstAmount, grandTotal } = calcInvoice();
+
+  document.getElementById("grandTotalDisplay").textContent = inr(grandTotal);
+  document.getElementById("generateBtn").toggleAttribute("disabled", !p || selectedItems.length === 0);
+
+  const previewEmpty = document.getElementById("previewEmptyState");
+  const previewContent = document.getElementById("previewContent");
+
+  if (!p){
+    previewEmpty.style.display = "block";
+    previewContent.style.display = "none";
+    return;
+  }
+
+  previewEmpty.style.display = "none";
+  previewContent.style.display = "block";
+
+  document.getElementById("previewPatientInitials").textContent = p.initials;
+  document.getElementById("previewPatientName").textContent = p.name;
+  document.getElementById("previewPatientMeta").textContent = `Patient ID: ${p.id} · Age ${p.age} yrs`;
+
+  const lineItemsEl = document.getElementById("previewLineItems");
+  lineItemsEl.innerHTML = selectedItems.length
+    ? selectedItems.map(i => `<div class="invoice-line"><span>${escapeHtml(i.label)}</span><span>${inr(i.amount)}</span></div>`).join("")
+    : `<div class="items-empty">No charges selected — check items on the left to include them.</div>`;
+
   document.getElementById("lineSubtotal").textContent = inr(subtotal);
   document.getElementById("lineDiscount").textContent = "- " + inr(discount);
   document.getElementById("gstLabel").textContent = gstPct;
   document.getElementById("lineGst").textContent = inr(gstAmount);
   document.getElementById("lineGrandTotal").textContent = inr(grandTotal);
-  document.getElementById("grandTotalDisplay").textContent = inr(grandTotal);
 }
-
-[consultationInput, vaccinationInput, medicineInput, discountInput, gstInput].forEach(input => {
-  input.addEventListener("input", renderInvoicePreview);
-});
-
-/* =========================================================
-   PATIENT SEARCH (mock)
-========================================================= */
-const mockPatients = [
-  { id: "PED-1042", name: "Aarav Mehta",  age: 3, initials: "AM" },
-  { id: "PED-1077", name: "Ishita Rao",   age: 5, initials: "IR" },
-  { id: "PED-1103", name: "Kabir Shah",   age: 2, initials: "KS" },
-  { id: "PED-1129", name: "Ananya Iyer",  age: 4, initials: "AI" },
-  { id: "PED-1156", name: "Vihaan Gupta", age: 6, initials: "VG" }
-];
-
-const patientSearchInput = document.getElementById("patientSearchInput");
-patientSearchInput.addEventListener("input", () => {
-  const q = patientSearchInput.value.trim().toLowerCase();
-  const match = mockPatients.find(p => p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
-  if (match){
-    document.getElementById("patientInitials").textContent = match.initials;
-    document.getElementById("patientNameDisplay").textContent = match.name;
-    document.getElementById("patientMetaDisplay").textContent = `Patient ID: ${match.id} · Age ${match.age} yrs`;
-  }
-});
 
 /* =========================================================
    INVOICE GENERATION
@@ -710,27 +981,33 @@ let invoiceCounter = 1043;
 let invoiceGenerated = false;
 
 document.getElementById("generateBtn").addEventListener("click", () => {
+  const { p, selectedItems, grandTotal } = calcInvoice();
+  if (!p || selectedItems.length === 0) return;
+
   const invoiceNo = "INV-" + invoiceCounter;
   document.getElementById("previewInvoiceNo").textContent = invoiceNo;
-
-  const { grandTotal } = calcInvoice();
-  const patientName = document.getElementById("patientNameDisplay").textContent;
 
   historyData.unshift({
     invoiceNo,
     date: "07 Jul 2026",
-    patient: patientName,
+    patient: p.name,
     amount: grandTotal,
     status: "paid"
   });
+
+  // billed items are removed from the patient's pending list
+  const billedIds = new Set(selectedItems.map(i => i.id));
+  p.items = p.items.filter(i => !billedIds.has(i.id));
 
   invoiceCounter++;
   invoiceGenerated = true;
   document.getElementById("printInvoiceBtn").removeAttribute("disabled");
   document.getElementById("downloadInvoiceBtn").removeAttribute("disabled");
 
+  renderBillableItems();
+  updateAll();
   renderHistory();
-  showToast(`Invoice ${invoiceNo} generated for ${patientName}`);
+  showToast(`Invoice ${invoiceNo} generated for ${p.name}`);
 });
 
 document.getElementById("printInvoiceBtn").addEventListener("click", () => {
@@ -811,7 +1088,7 @@ function renderHistory(){
 /* =========================================================
    INIT
 ========================================================= */
-renderInvoicePreview();
+updateAll();
 renderStatusTabs();
 renderHistory();
 
