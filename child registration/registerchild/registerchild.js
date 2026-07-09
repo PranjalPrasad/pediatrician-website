@@ -23,24 +23,34 @@ const ICON = {
 };
 
 /* =========================================================
-   SIDEBAR ROUTING (same structure as the dashboard)
+   SIDEBAR ROUTING (Current Page: registerchild.html)
 ========================================================= */
 const sidebarItems = [
   { type: "link",  icon: ICON.home,        label: "Dashboard",         href: "../../dashboard.html" },
-  { type: "group", icon: ICON.users,       label: "Children",         key: "children", children: [
-      { label: "All Children",   href: "../../all-children/childp.html" },
+
+  { type: "group", icon: ICON.users,       label: "Children", key: "children", children: [
+      { label: "All Children",   href: "../all-children/childp.html" },
       { label: "Register Child", href: "registerchild.html" }
     ]
   },
+
   { type: "link",  icon: ICON.calendar,    label: "Appointments",      href: "../../appointment/appointment.html" },
+
   { type: "link",  icon: ICON.stethoscope, label: "Consultations",     href: "../../consultation/opd.html" },
+
   { type: "link",  icon: ICON.clipboard,   label: "Prescriptions",     href: "../../prescription/prescription.html" },
+
   { type: "link",  icon: ICON.syringe,     label: "Vaccinations",      href: "../../vaccination.html" },
+
   { type: "link",  icon: ICON.activity,    label: "Growth Monitoring", href: "../../Growth/growth.html" },
+
   { type: "link",  icon: ICON.file,        label: "Reports",           href: "../../reports.html" },
+
   { type: "link",  icon: ICON.receipt,     label: "Billing",           href: "../../billing.html" },
-  { type: "link",  icon: ICON.userPlus,    label: "User Management",   href: "../../user.html" },
-  { type: "action", icon: ICON.logout,      label: "Logout",            action: "logout" }
+
+  { type: "link",  icon: ICON.userPlus,    label: "User Management",   href: "../../user/user.html" },
+
+  { type: "action", icon: ICON.logout, label: "Logout", action: "logout" }
 ];
 
 const currentPage = (location.pathname.split("/").pop() || "registerchild.html").toLowerCase();
