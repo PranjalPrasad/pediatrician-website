@@ -412,7 +412,7 @@
 </div>
 <script src="/auth.js"></script>
 <script>
-  protectPage();
+  // protectPage();
 /* =========================================================
    ICONS
 ========================================================= */
@@ -492,7 +492,7 @@ sidebarItems.forEach(item => {
     btn.className = "nav-item";
     btn.title = item.label;
     btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-    btn.addEventListener("click", () => { if (item.action === "logout") window.location.href = "login.html"; });
+    btn.addEventListener("click", () => { if (item.action === "logout") window.location.href = "index.html"; });
     sidebarNav.appendChild(btn);
     return;
   }

@@ -56,7 +56,7 @@ const sidebarItems = [
   { type: "link",  icon: ICON.file,        label: "Reports",           href: "../../reports.html" },
   { type: "link",  icon: ICON.receipt,     label: "Billing",           href: "../../billing.html" },
   { type: "link",  icon: ICON.userPlus,    label: "User Management",   href: "../../user.html" },
-  { type: "action", icon: ICON.logout,      label: "Logout",            action: "logout" }
+  { type: "action", icon: ICON.logout, label: "Logout", action: "logout" } 
 ];
 
 const currentPage = (location.pathname.split("/").pop() || "childp.html").toLowerCase();
@@ -192,23 +192,28 @@ window.addEventListener("resize", syncBackdrop);
    LOGOUT — delegates to auth.js's logout(), which clears the
    correct keys ("isLoggedIn" / "clinicUser") and redirects.
 ========================================================= */
+// ✅ NAYA — auth.js ke logout() ko hi call karo, alag se kuch clear mat karo
+function performLogout() {
+    if (typeof window.logout === "function") {
+        window.logout();
+    } else {
+        console.error("auth.js not loaded — logout() unavailable");
+    }
+}
+
+/* =========================================================
+   LOGOUT OVERLAY — wires up the modal buttons that already
+   exist in childp.html but were never connected here.
+========================================================= */
 const logoutOverlay = document.getElementById("logoutOverlay");
 document.querySelector("#logoutOverlay .logout-modal-icon").innerHTML = ICON.logout;
+
 function openLogoutOverlay() { logoutOverlay.classList.add("show"); }
 function closeLogoutOverlay() { logoutOverlay.classList.remove("show"); }
+
 document.getElementById("logoutCancelBtn").addEventListener("click", closeLogoutOverlay);
 logoutOverlay.addEventListener("click", (e) => { if (e.target === logoutOverlay) closeLogoutOverlay(); });
-document.getElementById("logoutConfirmBtn").addEventListener("click", () => {
-  if (typeof window.logout === "function") {
-    window.logout();
-  } else {
-    // Fallback only if auth.js failed to load, using the same keys auth.js defines.
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("clinicUser");
-    sessionStorage.clear();
-    window.location.replace("index.html");
-  }
-});
+document.getElementById("logoutConfirmBtn").addEventListener("click", performLogout);
 
 /* toast */
 const toast = document.getElementById("toast");

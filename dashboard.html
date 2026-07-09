@@ -6,7 +6,7 @@
 <title>Pediatric Clinic Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="/auth.js"></script>
+
 
 <style>
   :root{
@@ -768,10 +768,9 @@
     </div>
   </div>
 </div>
-
+<script src="/auth.js"></script>
 <script>
-
-  // protectPage();
+  
 /* =========================================================
    ICON LIBRARY (minimal hand-drawn stroke icons, lucide-like)
 ========================================================= */
@@ -1350,6 +1349,9 @@ drawLineChart(visitData, "All");
 drawBarChart(vaccineData);
 drawPieChart(stateData);
 filterStatusEl.textContent = activeFilterSummary();
+
+// protectPage();
 </script>
+
 </body>
 </html>

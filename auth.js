@@ -27,21 +27,20 @@ function login(email, password) {
     return false;
 }
 
+// Logout karne ka function — ab kisi bhi page (chahe kitna bhi nested ho) se sahi kaam karega
 function logout() {
-
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(USER_KEY);
-
     sessionStorage.clear();
 
-    window.location.replace("index.html");
-
+    // Absolute path use kiya — root se resolve hoga, relative "../" ki tarah depth-dependent nahi
+    window.location.replace("/index.html");
 }
 
 // Har page ko protect karne ke liye
 function protectPage() {
     if (!isAuthenticated()) {
-        window.location.replace("index.html");
+        window.location.replace("/index.html");
     }
 }
 

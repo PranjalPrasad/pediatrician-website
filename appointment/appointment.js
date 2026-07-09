@@ -69,9 +69,15 @@ sidebarItems.forEach(item => {
     btn.className = "nav-item";
     btn.title = item.label;
     btn.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>`;
-    btn.addEventListener("click", () => {
-      if (item.action === "logout") performLogout();
-    });
+  btn.addEventListener("click", () => {
+    if (item.action !== "logout") return;
+
+    if (typeof logout === "function") {
+        logout();   // auth.js ka same logout use hoga
+    } else {
+        console.error("logout() not found. Check auth.js path.");
+    }
+});
     sidebarNav.appendChild(btn);
     return;
   }
@@ -122,28 +128,6 @@ sidebarBackdrop.addEventListener("click", () => {
   sidebarBackdrop.classList.remove("show");
 });
 
-/* =========================================================
-   LOGOUT — safe wrapper around the global logout() from
-   auth.js, with a confirm step and a working fallback
-========================================================= */
-function performLogout(){
-  const confirmed = window.confirm("Are you sure you want to logout?");
-  if (!confirmed) return;
-
-  try {
-    if (typeof logout === "function") {
-      logout();
-    } else {
-      sessionStorage.clear();
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("token");
-      window.location.href = "../login.html";
-    }
-  } catch (err) {
-    console.error("Logout failed:", err);
-    window.location.href = "../login.html";
-  }
-}
 
 /* =========================================================
    HEADER META

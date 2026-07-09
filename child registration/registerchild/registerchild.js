@@ -219,26 +219,12 @@ document.getElementById("logoutConfirmBtn").addEventListener("click", () => {
   performLogout();
 });
 
-/**
- * performLogout()
- * Always prefers the real logout() defined in auth.js, which
- * clears the correct keys ("isLoggedIn" / "clinicUser") and
- * redirects to index.html. Falls back to the same keys/redirect
- * only if auth.js somehow failed to load, so the button never
- * silently fails and never disagrees with auth.js about storage.
- */
 function performLogout() {
-  if (typeof window.logout === "function") {
-    window.logout();
-    return;
-  }
-  console.warn("logout() was not found on window (auth.js not loaded). Using fallback logout.");
-  try {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("clinicUser");
-    sessionStorage.clear();
-  } catch (e) { /* ignore storage errors */ }
-  window.location.replace("index.html");
+    if (typeof window.logout === "function") {
+        window.logout();
+    } else {
+        console.error("auth.js not loaded — logout() unavailable");
+    }
 }
 
 /* =========================================================
