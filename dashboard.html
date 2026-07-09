@@ -158,8 +158,8 @@
   .sidebar.expanded .nav-label{ display:inline-block; }
 
   /* Submenu (Children -> All Children / Register Child) */
-  .nav-group{ width:100%; }
-  .nav-parent{
+.nav-group{ width:100%; display:flex; flex-direction:column; align-items:center; }
+.sidebar.expanded .nav-group{ align-items:stretch; }  .nav-parent{
     width:38px; height:38px;
     border-radius:12px;
     display:flex; align-items:center; justify-content:center;

@@ -710,11 +710,13 @@ function openLinkModal(link){
 
 /* =========================================================
    WHATSAPP MESSAGE
-   Builds a full text summary of the prescription + invoice and
-   opens WhatsApp (wa.me) pre-filled with it, addressed to the
-   patient's registered mobile number. The user taps Send inside
-   WhatsApp — actual sending always requires that final tap
-   because there is no backend / WhatsApp Business API here.
+   Builds a short, essential-only summary of the prescription
+   (patient, medicines, total due, and a link for full details)
+   and opens WhatsApp (wa.me) pre-filled with it, addressed to
+   the patient's own registered mobile number. The user taps
+   Send inside WhatsApp — actual sending always requires that
+   final tap because there is no backend / WhatsApp Business
+   API here.
 ========================================================= */
 function buildWhatsappMessage(link){
   const p = selectedPatient;
@@ -722,32 +724,19 @@ function buildWhatsappMessage(link){
   const inv = currentInvoice;
 
   const medLines = meds.map((m, i) =>
-    `${i + 1}. ${m.name} — ${doseLabel(m)}, ${m.duration || "—"}, ${m.food}${m.instruction ? " (" + m.instruction + ")" : ""}`
+    `${i + 1}. ${m.name} — ${doseLabel(m)}${m.duration ? ", " + m.duration : ""}`
   ).join("\n");
 
-  const invoiceLines =
-`Consultation Fee: ${formatCurrency(inv.consultation)}
-Medicine Charges: ${formatCurrency(inv.medicine)}
-Discount (${inv.discountPct}%): -${formatCurrency(inv.discountAmt)}
-GST (${inv.gstPct}%): +${formatCurrency(inv.gstAmt)}
-*Grand Total: ${formatCurrency(inv.grandTotal)}*`;
-
   return `*${CLINIC.name}*
-${CLINIC.address}
-
-*Prescription for ${p.name} (${p.id})*
+Prescription for *${p.name}* (${p.id})
 Date: ${formatDate("2026-07-07")}
-Doctor: ${CLINIC.doctorName}
 
 *Medicines:*
 ${medLines}
 
-*Invoice:*
-${invoiceLines}
+*Amount Due: ${formatCurrency(inv.grandTotal)}*
 
-View / print full prescription: ${link}
-
-_This message was sent from the Pediatric Clinic Management System._`;
+Full prescription & invoice: ${link}`;
 }
 
 function sendPrescriptionOnWhatsapp(existingLink){
@@ -772,7 +761,7 @@ function openWhatsappPreviewModal(message, waUrl){
       <div class="modal-title whatsapp"><span class="modal-icon">${ICON.whatsapp}</span>Send on WhatsApp</div>
       <button class="modal-close" id="modalCloseBtn">${ICON.x}</button>
     </div>
-    <p class="modal-text">This will open WhatsApp with the message below, pre-addressed to <strong>${selectedPatient.phone}</strong>. Tap send inside WhatsApp to deliver it.</p>
+    <p class="modal-text">This will open WhatsApp with the message below, pre-addressed to <strong>${selectedPatient.phone}</strong> (this child's registered number). Tap send inside WhatsApp to deliver it.</p>
     <div class="wa-preview">${message.replace(/</g, "&lt;")}</div>
     <div class="modal-actions">
       <button class="btn btn-outline" id="modalCancelBtn">Cancel</button>

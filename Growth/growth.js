@@ -25,7 +25,10 @@ const ICON = {
   head: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="0.6" fill="currentColor"/><path d="M8 15c1.2 1 2.6 1.5 4 1.5s2.8-.5 4-1.5"/></svg>`,
   chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
   logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>`,
-  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>`
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5 5-5.5"/></svg>`,
+  usersGroup: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="9" r="3.3"/><circle cx="17" cy="10" r="2.6"/><path d="M2.5 21c0-3.7 2.9-6.4 5.5-6.4s5.5 2.7 5.5 6.4"/><path d="M14.5 15.2c2.2.4 4 2.6 4 5.8"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>`,
+  x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`
 };
 
 /* =========================================================
@@ -139,11 +142,24 @@ let growthData = {
   ]
 };
 
-let currentChildId = children[0].id;
+// null = "All Patients" mode (table + stats span every child)
+let currentChildId = null;
 
-function currentChild(){ return children.find(c => c.id === currentChildId); }
-function currentRecords(){
-  return (growthData[currentChildId] || []).slice().sort((a,b) => new Date(a.date) - new Date(b.date));
+function childById(id){ return children.find(c => c.id === id); }
+function currentChild(){ return currentChildId ? childById(currentChildId) : null; }
+
+function childRecordsSorted(childId){
+  return (growthData[childId] || []).slice().sort((a,b) => new Date(a.date) - new Date(b.date));
+}
+function currentRecords(){ return currentChildId ? childRecordsSorted(currentChildId) : []; }
+
+// Every record across every patient, tagged with its owning child, most recent first
+function allRecordsFlat(){
+  let out = [];
+  children.forEach(c => {
+    (growthData[c.id] || []).forEach(rec => out.push({ rec, childId: c.id }));
+  });
+  return out.sort((a, b) => new Date(b.rec.date) - new Date(a.rec.date));
 }
 
 function initials(name){ return name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase(); }
@@ -164,11 +180,11 @@ function bmiTag(bmi){
 ========================================================= */
 const searchInput = document.getElementById("searchChild");
 const searchDropdown = document.getElementById("searchDropdown");
+const viewAllBtn = document.getElementById("viewAllBtn");
 
 function renderSearchDropdown(query){
   const q = query.trim().toLowerCase();
 
-  // empty query -> show the full child list so the box still feels useful
   const matches = q
     ? children.filter(c => c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
     : children;
@@ -193,11 +209,7 @@ function renderSearchDropdown(query){
   searchDropdown.querySelectorAll(".search-option").forEach(opt => {
     opt.addEventListener("click", () => {
       const id = opt.getAttribute("data-id");
-      const child = children.find(c => c.id === id);
-      currentChildId = id;
-      searchInput.value = child.name;
-      closeSearchDropdown();
-      renderAll();
+      selectChild(id);
     });
   });
 
@@ -206,7 +218,28 @@ function renderSearchDropdown(query){
 
 function closeSearchDropdown(){ searchDropdown.classList.remove("show"); }
 
-searchInput.addEventListener("input", (e) => renderSearchDropdown(e.target.value));
+function selectChild(id){
+  const child = childById(id);
+  if (!child) return;
+  currentChildId = id;
+  tablePage = 1;
+  searchInput.value = child.name;
+  closeSearchDropdown();
+  renderAll();
+}
+
+function clearChildSelection(){
+  currentChildId = null;
+  tablePage = 1;
+  searchInput.value = "";
+  closeSearchDropdown();
+  renderAll();
+}
+
+searchInput.addEventListener("input", (e) => {
+  if (e.target.value.trim() === "" && currentChildId) currentChildId = null;
+  renderSearchDropdown(e.target.value);
+});
 searchInput.addEventListener("focus", (e) => renderSearchDropdown(e.target.value));
 
 searchInput.addEventListener("keydown", (e) => {
@@ -215,30 +248,43 @@ searchInput.addEventListener("keydown", (e) => {
     const match = q
       ? children.find(c => c.name.toLowerCase().includes(q) || c.id.toLowerCase().includes(q))
       : null;
-    if (match){
-      currentChildId = match.id;
-      searchInput.value = match.name;
-      closeSearchDropdown();
-      renderAll();
-    }
+    if (match) selectChild(match.id);
   } else if (e.key === "Escape"){
     closeSearchDropdown();
   }
 });
 
-// close dropdown when clicking anywhere outside the search box
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".search-wrap")) closeSearchDropdown();
 });
 
+viewAllBtn.addEventListener("click", clearChildSelection);
+
 /* =========================================================
-   CHILD BANNER
+   CHILD BANNER (single patient OR all-patients summary)
 ========================================================= */
 function renderBanner(){
+  const banner = document.getElementById("childBanner");
+
+  if (!currentChildId){
+    const totalRecords = children.reduce((sum, c) => sum + (growthData[c.id] || []).length, 0);
+    banner.classList.add("all-mode");
+    banner.innerHTML = `
+      <div class="avatar-lg">${ICON.usersGroup}</div>
+      <div>
+        <div class="cb-name">All Patients</div>
+        <div class="cb-meta">${children.length} patients &middot; ${totalRecords} growth records on file &middot; tap a row below or search a name to drill in</div>
+      </div>
+    `;
+    viewAllBtn.style.display = "none";
+    return;
+  }
+
+  banner.classList.remove("all-mode");
   const child = currentChild();
   const records = currentRecords();
   const latest = records[records.length - 1];
-  document.getElementById("childBanner").innerHTML = `
+  banner.innerHTML = `
     <div class="avatar-lg">${initials(child.name)}</div>
     <div>
       <div class="cb-name">${child.name}</div>
@@ -246,12 +292,44 @@ function renderBanner(){
         ${latest ? " &middot; last measured " + latest.date : ""}</div>
     </div>
   `;
+  viewAllBtn.style.display = "inline-flex";
 }
 
 /* =========================================================
-   CURRENT DETAILS (KPI cards) — derived from latest record
+   CURRENT DETAILS (KPI cards)
 ========================================================= */
 function renderKPIs(){
+  const row = document.getElementById("kpiRow");
+
+  if (!currentChildId){
+    const totalRecords = children.reduce((sum, c) => sum + (growthData[c.id] || []).length, 0);
+    const allDates = children.flatMap(c => (growthData[c.id] || []).map(r => r.date));
+    const latestDate = allDates.length ? allDates.sort().slice(-1)[0] : "—";
+
+    let flaggedCount = 0;
+    children.forEach(c => {
+      const recs = childRecordsSorted(c.id);
+      const latest = recs[recs.length - 1];
+      if (latest && bmiTag(calcBMI(latest.height, latest.weight)).cls !== "normal") flaggedCount++;
+    });
+
+    const kpiData = [
+      { label:"Total Patients",     value: children.length, icon: ICON.usersGroup, delta: "Being tracked for growth" },
+      { label:"Total Records",      value: totalRecords, icon: ICON.clipboard, delta: "Across all patients" },
+      { label:"Needs Attention",    value: flaggedCount, icon: ICON.activity, delta: "Patients with low/high BMI" },
+      { label:"Last Updated",       value: latestDate, icon: ICON.clock, delta: "Most recent measurement" }
+    ];
+    row.innerHTML = kpiData.map(k => `
+      <div class="card kpi-card">
+        <div class="kpi-icon">${k.icon}</div>
+        <div class="kpi-label">${k.label}</div>
+        <div class="kpi-value">${k.value}</div>
+        <div class="kpi-sub">${k.delta}</div>
+      </div>
+    `).join("");
+    return;
+  }
+
   const records = currentRecords();
   const latest = records[records.length - 1];
   const prev = records[records.length - 2];
@@ -263,7 +341,7 @@ function renderKPIs(){
     { label:"Head Circumference",         value: latest ? latest.head + " cm" : "—", icon: ICON.head, delta: prev ? (latest.head - prev.head).toFixed(1) + " cm since last visit" : "No previous record" }
   ];
 
-  document.getElementById("kpiRow").innerHTML = kpiData.map(k => `
+  row.innerHTML = kpiData.map(k => `
     <div class="card kpi-card">
       <div class="kpi-icon">${k.icon}</div>
       <div class="kpi-label">${k.label}</div>
@@ -276,7 +354,7 @@ function renderKPIs(){
 /* =========================================================
    GENERIC LINE CHART RENDERER (reused for height/weight/bmi)
 ========================================================= */
-function drawLineChart(svgId, tooltipId, data, key, unit, color, opts){
+function drawLineChart(svgId, tooltipId, data, key, unit, color){
   const svg = document.getElementById(svgId);
   const tooltip = document.getElementById(tooltipId);
   const vb = svg.viewBox.baseVal;
@@ -321,7 +399,6 @@ function drawLineChart(svgId, tooltipId, data, key, unit, color, opts){
     return (i === 0 ? "M" : "L") + x.toFixed(1) + " " + y.toFixed(1);
   }).join(" ");
 
-  // soft area fill under the line
   if (!singlePoint) {
     const [x0] = xy(0, 0);
     const [xN] = xy(data.length - 1, 0);
@@ -351,7 +428,34 @@ function drawLineChart(svgId, tooltipId, data, key, unit, color, opts){
   });
 }
 
+function renderChartsEmptyState(){
+  const msg = `
+    <div class="charts-empty-state">
+      <div class="ces-icon">${ICON.activity}</div>
+      <div class="ces-title">Select a patient to see their growth trends</div>
+      <div class="ces-sub">Search a name or patient ID above, or click any row in the table below, to view height, weight and BMI charts for that patient.</div>
+    </div>
+  `;
+  document.getElementById("heightChartWrap").innerHTML = msg + `<div class="chart-tooltip" id="heightTooltip"></div>`;
+  document.getElementById("weightChartWrap").innerHTML = msg + `<div class="chart-tooltip" id="weightTooltip"></div>`;
+  document.getElementById("bmiChartWrap").innerHTML = msg + `<div class="chart-tooltip" id="bmiTooltip"></div>`;
+  document.getElementById("heightChartSubtitle").textContent = "Centimeters over time";
+}
+
+function restoreChartMarkup(){
+  document.getElementById("heightChartWrap").innerHTML = `<svg id="heightChart" width="100%" viewBox="0 0 760 220"></svg><div class="chart-tooltip" id="heightTooltip"></div>`;
+  document.getElementById("weightChartWrap").innerHTML = `<svg id="weightChart" width="100%" viewBox="0 0 360 200"></svg><div class="chart-tooltip" id="weightTooltip"></div>`;
+  document.getElementById("bmiChartWrap").innerHTML = `<svg id="bmiChart" width="100%" viewBox="0 0 360 200"></svg><div class="chart-tooltip" id="bmiTooltip"></div>`;
+}
+
 function renderCharts(){
+  if (!currentChildId){
+    renderChartsEmptyState();
+    return;
+  }
+  restoreChartMarkup();
+  const child = currentChild();
+  document.getElementById("heightChartSubtitle").textContent = `Centimeters over time \u2014 ${child.name} (${child.id})`;
   const records = currentRecords();
   drawLineChart("heightChart", "heightTooltip", records, "height", " cm", "#6C63FF");
   drawLineChart("weightChart", "weightTooltip", records, "weight", " kg", "#4F8EF7");
@@ -359,26 +463,61 @@ function renderCharts(){
 }
 
 /* =========================================================
-   HISTORY TABLE
+   HISTORY TABLE — shows every patient's records, or just the
+   selected patient's when one is chosen. Row wrappers carry
+   { rec, childId } so every action button knows exactly which
+   patient/record it belongs to, regardless of filter state.
 ========================================================= */
 let currentTableData = [];
+const PAGE_SIZE = 5;
+let tablePage = 1;
 
 function renderTable(){
-  const records = currentRecords().slice().reverse(); // most recent first
-  currentTableData = records;
-  const body = document.getElementById("growthTableBody");
+  let allRows;
+  if (currentChildId){
+    allRows = currentRecords().slice().reverse().map(rec => ({ rec, childId: currentChildId }));
+  } else {
+    allRows = allRecordsFlat();
+  }
 
-  if (!records.length){
-    body.innerHTML = `<tr class="empty-row"><td colspan="7">No growth records found for this child yet.</td></tr>`;
+  const body = document.getElementById("growthTableBody");
+  document.getElementById("tableSubtitle").textContent = currentChildId
+    ? `All measurements for ${currentChild().name}`
+    : "All recorded measurements, across every patient";
+  document.getElementById("tableSortLabel").textContent = "Sorted by most recent date";
+
+  if (!allRows.length){
+    currentTableData = [];
+    body.innerHTML = `<tr class="empty-row"><td colspan="8">No growth records found${currentChildId ? " for this child yet." : "."}</td></tr>`;
     document.getElementById("resultCount").textContent = "0 records";
+    document.getElementById("pagination").innerHTML = "";
     return;
   }
 
-  body.innerHTML = records.map((r, i) => {
+  const totalPages = Math.max(1, Math.ceil(allRows.length / PAGE_SIZE));
+  if (tablePage > totalPages) tablePage = totalPages;
+  if (tablePage < 1) tablePage = 1;
+
+  const startIdx = (tablePage - 1) * PAGE_SIZE;
+  const rows = allRows.slice(startIdx, startIdx + PAGE_SIZE);
+  currentTableData = rows;
+
+  body.innerHTML = rows.map((row, i) => {
+    const r = row.rec;
+    const child = childById(row.childId);
     const bmi = calcBMI(r.height, r.weight);
     const tag = bmiTag(bmi);
     return `
       <tr>
+        <td>
+          <div class="patient-cell" data-action="goto-patient" data-child="${row.childId}">
+            <div class="pc-avatar">${initials(child.name)}</div>
+            <div>
+              <div class="pc-name">${child.name}</div>
+              <div class="pc-id">${child.id}</div>
+            </div>
+          </div>
+        </td>
         <td>${r.date}</td>
         <td>${r.height}</td>
         <td>${r.weight}</td>
@@ -396,8 +535,16 @@ function renderTable(){
     `;
   }).join("");
 
-  document.getElementById("resultCount").textContent = `${records.length} record${records.length === 1 ? "" : "s"}`;
+  const rangeStart = startIdx + 1;
+  const rangeEnd = startIdx + rows.length;
+  document.getElementById("resultCount").textContent =
+    `Showing ${rangeStart}\u2013${rangeEnd} of ${allRows.length} record${allRows.length === 1 ? "" : "s"}`;
 
+  renderPagination(totalPages);
+
+  body.querySelectorAll("[data-action='goto-patient']").forEach(el => {
+    el.addEventListener("click", () => selectChild(el.getAttribute("data-child")));
+  });
   body.querySelectorAll("[data-action='view']").forEach(btn => {
     btn.addEventListener("click", (e) => openViewGrowth(currentTableData[e.currentTarget.getAttribute("data-i")]));
   });
@@ -405,13 +552,64 @@ function renderTable(){
     btn.addEventListener("click", (e) => openEditGrowth(currentTableData[e.currentTarget.getAttribute("data-i")]));
   });
   body.querySelectorAll("[data-action='delete']").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      const rec = currentTableData[e.currentTarget.getAttribute("data-i")];
-      growthData[currentChildId] = growthData[currentChildId].filter(r => r !== rec);
-      showToast(`Growth record for ${rec.date} deleted`);
-      renderAll();
-    });
+    btn.addEventListener("click", (e) => openDeleteConfirm(currentTableData[e.currentTarget.getAttribute("data-i")]));
   });
+}
+
+function goToPage(page){
+  tablePage = page;
+  renderTable();
+}
+
+function renderPagination(totalPages){
+  const el = document.getElementById("pagination");
+
+  if (totalPages <= 1){
+    el.innerHTML = "";
+    return;
+  }
+
+  const prevIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>`;
+  const nextIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>`;
+
+  // Build a compact page-number list with ellipses for large page counts
+  const pages = [];
+  const add = (p) => { if (!pages.includes(p)) pages.push(p); };
+  add(1);
+  add(totalPages);
+  for (let p = tablePage - 1; p <= tablePage + 1; p++) { if (p > 1 && p < totalPages) add(p); }
+  pages.sort((a, b) => a - b);
+
+  let html = `<button type="button" class="pg-btn" id="pgPrev" ${tablePage === 1 ? "disabled" : ""} title="Previous page">${prevIcon}</button>`;
+
+  let prevP = 0;
+  pages.forEach(p => {
+    if (p - prevP > 1) html += `<span class="pg-ellipsis">&hellip;</span>`;
+    html += `<button type="button" class="pg-btn ${p === tablePage ? "active" : ""}" data-page="${p}">${p}</button>`;
+    prevP = p;
+  });
+
+  html += `<button type="button" class="pg-btn" id="pgNext" ${tablePage === totalPages ? "disabled" : ""} title="Next page">${nextIcon}</button>`;
+
+  el.innerHTML = html;
+
+  const prevBtn = document.getElementById("pgPrev");
+  const nextBtn = document.getElementById("pgNext");
+  if (prevBtn) prevBtn.addEventListener("click", () => { if (tablePage > 1) goToPage(tablePage - 1); });
+  if (nextBtn) nextBtn.addEventListener("click", () => { if (tablePage < totalPages) goToPage(tablePage + 1); });
+  el.querySelectorAll("[data-page]").forEach(btn => {
+    btn.addEventListener("click", () => goToPage(parseInt(btn.getAttribute("data-page"), 10)));
+  });
+}
+
+/* =========================================================
+   PATIENT <select> used inside the Add/Edit modal so any
+   record, for any patient, can always be created or moved.
+========================================================= */
+const fPatientSelect = document.getElementById("fPatient");
+function populatePatientSelect(selectedId){
+  fPatientSelect.innerHTML = children.map(c => `<option value="${c.id}">${c.name} (${c.id})</option>`).join("");
+  fPatientSelect.value = selectedId;
 }
 
 /* =========================================================
@@ -431,24 +629,29 @@ function fillGrowthForm(rec){
 }
 
 function openAddGrowth(){
-  document.getElementById("fEditIndex").value = "";
+  editingRecordRef = null;
+  editingChildId = null;
   growthModalTitle.textContent = "Add Growth Record";
   saveGrowthBtn.textContent = "Save Record";
+  populatePatientSelect(currentChildId || children[0].id);
   fillGrowthForm(null);
   growthOverlay.classList.add("show");
 }
 
 let editingRecordRef = null;
+let editingChildId = null;
 
-function openEditGrowth(rec){
-  editingRecordRef = rec;
+function openEditGrowth(wrapper){
+  editingRecordRef = wrapper.rec;
+  editingChildId = wrapper.childId;
   growthModalTitle.textContent = "Edit Growth Record";
   saveGrowthBtn.textContent = "Update Record";
-  fillGrowthForm(rec);
+  populatePatientSelect(wrapper.childId);
+  fillGrowthForm(wrapper.rec);
   growthOverlay.classList.add("show");
 }
 
-function closeGrowthModal(){ growthOverlay.classList.remove("show"); editingRecordRef = null; }
+function closeGrowthModal(){ growthOverlay.classList.remove("show"); editingRecordRef = null; editingChildId = null; }
 
 document.getElementById("addGrowthBtn").addEventListener("click", openAddGrowth);
 document.getElementById("closeGrowthModal").addEventListener("click", closeGrowthModal);
@@ -456,6 +659,7 @@ document.getElementById("cancelGrowthModal").addEventListener("click", closeGrow
 growthOverlay.addEventListener("click", (e) => { if (e.target === growthOverlay) closeGrowthModal(); });
 
 saveGrowthBtn.addEventListener("click", () => {
+  const patientId = fPatientSelect.value;
   const date = document.getElementById("fDate").value;
   const height = parseFloat(document.getElementById("fHeight").value);
   const weight = parseFloat(document.getElementById("fWeight").value);
@@ -463,22 +667,31 @@ saveGrowthBtn.addEventListener("click", () => {
   const doctor = document.getElementById("fDoctor").value;
   const notes = document.getElementById("fNotes").value;
 
-  if (!date || isNaN(height) || isNaN(weight) || isNaN(head)) {
-    showToast("Please fill date, height, weight and head circumference");
+  if (!patientId || !date || isNaN(height) || isNaN(weight) || isNaN(head)) {
+    showToast("Please select a patient and fill date, height, weight and head circumference");
     return;
   }
 
   if (editingRecordRef) {
+    // Update fields in place
     editingRecordRef.date = date;
     editingRecordRef.height = height;
     editingRecordRef.weight = weight;
     editingRecordRef.head = head;
     editingRecordRef.doctor = doctor;
     editingRecordRef.notes = notes;
+
+    // If the patient was changed, move the record to the new patient's history
+    if (patientId !== editingChildId) {
+      growthData[editingChildId] = (growthData[editingChildId] || []).filter(r => r !== editingRecordRef);
+      if (!growthData[patientId]) growthData[patientId] = [];
+      growthData[patientId].push(editingRecordRef);
+    }
     showToast(`Growth record for ${date} updated`);
   } else {
-    if (!growthData[currentChildId]) growthData[currentChildId] = [];
-    growthData[currentChildId].push({ date, height, weight, head, doctor, notes });
+    if (!growthData[patientId]) growthData[patientId] = [];
+    growthData[patientId].push({ date, height, weight, head, doctor, notes });
+    tablePage = 1;
     showToast(`Growth record for ${date} added`);
   }
 
@@ -490,12 +703,15 @@ saveGrowthBtn.addEventListener("click", () => {
    VIEW MODAL (read-only, with hand-off to edit)
 ========================================================= */
 const viewGrowthOverlay = document.getElementById("viewGrowthOverlay");
-let viewingRecord = null;
+let viewingWrapper = null;
 
-function openViewGrowth(rec){
-  viewingRecord = rec;
+function openViewGrowth(wrapper){
+  viewingWrapper = wrapper;
+  const rec = wrapper.rec;
+  const child = childById(wrapper.childId);
   const bmi = calcBMI(rec.height, rec.weight);
   const tag = bmiTag(bmi);
+  document.getElementById("vPatient").textContent = `${child.name} (${child.id})`;
   document.getElementById("vDate").textContent = rec.date;
   document.getElementById("vDoctor").textContent = rec.doctor;
   document.getElementById("vHeight").textContent = rec.height + " cm";
@@ -506,16 +722,46 @@ function openViewGrowth(rec){
   viewGrowthOverlay.classList.add("show");
 }
 
-function closeViewGrowth(){ viewGrowthOverlay.classList.remove("show"); viewingRecord = null; }
+function closeViewGrowth(){ viewGrowthOverlay.classList.remove("show"); viewingWrapper = null; }
 
 document.getElementById("closeViewGrowth").addEventListener("click", closeViewGrowth);
 document.getElementById("closeViewGrowth2").addEventListener("click", closeViewGrowth);
 viewGrowthOverlay.addEventListener("click", (e) => { if (e.target === viewGrowthOverlay) closeViewGrowth(); });
 
 document.getElementById("viewToEditGrowthBtn").addEventListener("click", () => {
-  if (!viewingRecord) return;
+  if (!viewingWrapper) return;
+  const wrapper = viewingWrapper;
   closeViewGrowth();
-  openEditGrowth(viewingRecord);
+  openEditGrowth(wrapper);
+});
+
+/* =========================================================
+   DELETE CONFIRM MODAL
+========================================================= */
+const deleteConfirmOverlay = document.getElementById("deleteConfirmOverlay");
+let pendingDelete = null;
+
+function openDeleteConfirm(wrapper){
+  pendingDelete = wrapper;
+  const child = childById(wrapper.childId);
+  document.getElementById("deleteConfirmBody").innerHTML =
+    `Are you sure you want to delete the growth record dated <strong>${wrapper.rec.date}</strong> for <strong>${child.name} (${child.id})</strong>? This cannot be undone.`;
+  deleteConfirmOverlay.classList.add("show");
+}
+
+function closeDeleteConfirm(){ deleteConfirmOverlay.classList.remove("show"); pendingDelete = null; }
+
+document.getElementById("closeDeleteConfirm").addEventListener("click", closeDeleteConfirm);
+document.getElementById("cancelDeleteConfirm").addEventListener("click", closeDeleteConfirm);
+deleteConfirmOverlay.addEventListener("click", (e) => { if (e.target === deleteConfirmOverlay) closeDeleteConfirm(); });
+
+document.getElementById("confirmDeleteBtn").addEventListener("click", () => {
+  if (!pendingDelete) return;
+  const { rec, childId } = pendingDelete;
+  growthData[childId] = (growthData[childId] || []).filter(r => r !== rec);
+  showToast(`Growth record for ${rec.date} deleted`);
+  closeDeleteConfirm();
+  renderAll();
 });
 
 /* =========================================================
@@ -540,5 +786,4 @@ function renderAll(){
   renderTable();
 }
 
-searchInput.value = currentChild().name;
 renderAll();

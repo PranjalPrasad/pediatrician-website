@@ -24,7 +24,10 @@ const ICON = {
   trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>`,
   alertTriangle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 20h20L12 2z"/><path d="M12 9v5M12 17h.01"/></svg>`,
   pill: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5L3.5 13.5a5 5 0 117-7l7 7a5 5 0 01-7 7z"/><path d="M8.5 8.5l7 7"/></svg>`,
-  logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>`
+  logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>`,
+  chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
+  printer: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><rect x="4" y="9" width="16" height="8" rx="1"/><path d="M6 17v5h12v-5"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>`
 };
 
 /* =========================================================
@@ -83,7 +86,7 @@ sidebarItems.forEach(item => {
   parent.type = "button";
   parent.className = "nav-parent" + (childActive ? " active" : "");
   parent.title = item.label;
-  parent.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>` + `<span class="nav-chevron">${ICON.check}</span>`;
+  parent.innerHTML = item.icon + `<span class="nav-label">${item.label}</span>` + `<span class="nav-chevron">${ICON.chevron}</span>`;
   parent.addEventListener("click", () => {
     group.classList.toggle("open");
     parent.classList.toggle("open");
@@ -135,6 +138,10 @@ let consultations = [
   { id: 3, patientId: "PC-1047", date: "2026-07-03", complaint: "Loose motions since morning", symptoms: ["Diarrhea","Loss of Appetite"], diagnosis: "Mild gastroenteritis", notes: "ORS advised, monitor hydration.", followUp: "2026-07-06" }
 ];
 let nextConsultId = consultations.length + 1;
+
+/* Prescriptions generated from the OPD screen (kept in-memory for this session) */
+let prescriptions = [];
+let nextPrescriptionId = 1;
 
 let selectedPatient = null;
 let currentSymptoms = [];
@@ -312,47 +319,284 @@ function resetConsultForm(){
 
 consultForm.addEventListener("submit", (e) => {
   e.preventDefault();
-  handleSave(false);
+  handleSave();
 });
 
+/* "Generate Prescription" now opens an in-app prescription builder
+   instead of saving + redirecting to a separate page. */
 document.getElementById("generatePrescriptionBtn").addEventListener("click", () => {
-  handleSave(true);
+  openPrescriptionBuilder();
 });
 
-function handleSave(goToPrescription){
+function getConsultFormValues(){
+  return {
+    complaint: document.getElementById("complaintInput").value.trim(),
+    diagnosis: document.getElementById("diagnosisInput").value.trim(),
+    notes: document.getElementById("notesInput").value.trim(),
+    date: document.getElementById("visitDateInput").value,
+    followUp: document.getElementById("followUpInput").value
+  };
+}
+
+function handleSave(){
   consultError.textContent = "";
-  if (!selectedPatient){ consultError.textContent = "Please select a patient first."; return; }
+  if (!selectedPatient){ consultError.textContent = "Please select a patient first."; return null; }
 
-  const complaint = document.getElementById("complaintInput").value.trim();
-  const diagnosis = document.getElementById("diagnosisInput").value.trim();
-  const notes = document.getElementById("notesInput").value.trim();
-  const date = document.getElementById("visitDateInput").value;
-  const followUp = document.getElementById("followUpInput").value;
+  const { complaint, diagnosis, notes, date, followUp } = getConsultFormValues();
 
-  if (!complaint){ consultError.textContent = "Please enter the chief complaint."; return; }
-  if (!diagnosis){ consultError.textContent = "Please enter a diagnosis."; return; }
+  if (!complaint){ consultError.textContent = "Please enter the chief complaint."; return null; }
+  if (!diagnosis){ consultError.textContent = "Please enter a diagnosis."; return null; }
 
-  consultations.unshift({
+  const record = {
     id: nextConsultId++,
     patientId: selectedPatient.id,
     date, complaint,
     symptoms: [...currentSymptoms],
     diagnosis, notes, followUp
-  });
+  };
+  consultations.unshift(record);
 
   renderKPIs();
   renderHistory();
-  showToast(goToPrescription
-    ? `Consultation saved. Opening Prescription module for ${selectedPatient.name}...`
-    : `Consultation saved for ${selectedPatient.name}`);
+  showToast(`Consultation saved for ${selectedPatient.name}`);
   resetConsultForm();
-
-  if (goToPrescription){
-    setTimeout(() => { window.location.href = "prescription.html"; }, 900);
-  }
+  return record;
 }
 
 document.getElementById("clearConsultBtn").addEventListener("click", resetConsultForm);
+
+/* =========================================================
+   PRESCRIPTION BUILDER (Generate Prescription)
+   Opens a modal where the doctor adds medicines, then generates
+   an actual prescription right here on the OPD screen — no redirect.
+========================================================= */
+let rxMedicines = [];
+let rxContext = null; // { patient, complaint, diagnosis, followUp, date }
+
+function emptyMedRow(){
+  return { name: "", dose: "1-0-1", duration: "5 days", instructions: "After food" };
+}
+
+function openPrescriptionBuilder(){
+  consultError.textContent = "";
+  if (!selectedPatient){ consultError.textContent = "Please select a patient first."; return; }
+
+  const { complaint, diagnosis, notes, date, followUp } = getConsultFormValues();
+  if (!complaint){ consultError.textContent = "Please enter the chief complaint before generating a prescription."; return; }
+  if (!diagnosis){ consultError.textContent = "Please enter a diagnosis before generating a prescription."; return; }
+
+  rxContext = { patient: selectedPatient, complaint, diagnosis, notes, date, followUp };
+  rxMedicines = [emptyMedRow()];
+  renderPrescriptionModal();
+}
+
+function renderPrescriptionModal(){
+  const p = rxContext.patient;
+  modalCard.innerHTML = `
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="modal-icon">${ICON.pill}</span>
+        Generate Prescription
+      </div>
+      <button class="modal-close" id="modalCloseBtn">${ICON.x}</button>
+    </div>
+
+    <div class="detail-row"><span class="detail-label">Patient</span><span class="detail-value">${p.name} (${p.id})</span></div>
+    <div class="detail-row"><span class="detail-label">Diagnosis</span><span class="detail-value">${rxContext.diagnosis}</span></div>
+
+    <div class="form-field full" style="margin-top:16px;">
+      <label class="form-label">Medicines</label>
+      <div id="rxMedList"></div>
+      <button type="button" class="btn btn-outline" id="addMedBtn" style="margin-top:10px; width:100%; justify-content:center;">
+        ${ICON.plus} Add Medicine
+      </button>
+    </div>
+
+    <div class="form-field full" style="margin-top:14px;">
+      <label class="form-label" for="rxAdvice">Advice</label>
+      <textarea class="form-textarea" id="rxAdvice" placeholder="General advice, precautions...">${rxContext.notes || ""}</textarea>
+    </div>
+
+    <div class="form-error" id="rxError"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="modalCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="generateRxBtn">${ICON.check} Generate Prescription</button>
+    </div>
+  `;
+  modalOverlay.classList.add("show");
+
+  renderRxMedList();
+
+  document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+  document.getElementById("modalCancelBtn").addEventListener("click", closeModal);
+  document.getElementById("addMedBtn").addEventListener("click", () => {
+    rxMedicines.push(emptyMedRow());
+    renderRxMedList();
+  });
+  document.getElementById("generateRxBtn").addEventListener("click", generateRxFinal);
+}
+
+function renderRxMedList(){
+  const wrap = document.getElementById("rxMedList");
+  wrap.innerHTML = rxMedicines.map((m, i) => `
+    <div class="rx-row" data-i="${i}" style="display:flex; gap:8px; margin-bottom:8px; align-items:center; flex-wrap:wrap;">
+      <input class="form-input rx-name" type="text" placeholder="Medicine name" value="${m.name.replace(/"/g,'&quot;')}" style="flex:2; min-width:140px;">
+      <input class="form-input rx-dose" type="text" placeholder="Dose e.g. 1-0-1" value="${m.dose.replace(/"/g,'&quot;')}" style="flex:1; min-width:90px;">
+      <input class="form-input rx-duration" type="text" placeholder="Duration" value="${m.duration.replace(/"/g,'&quot;')}" style="flex:1; min-width:90px;">
+      <input class="form-input rx-instructions" type="text" placeholder="Instructions" value="${m.instructions.replace(/"/g,'&quot;')}" style="flex:1.4; min-width:110px;">
+      <button type="button" class="icon-btn danger rx-remove" title="Remove">${ICON.trash}</button>
+    </div>
+  `).join("");
+
+  wrap.querySelectorAll(".rx-row").forEach(row => {
+    const i = Number(row.getAttribute("data-i"));
+    row.querySelector(".rx-name").addEventListener("input", e => rxMedicines[i].name = e.target.value);
+    row.querySelector(".rx-dose").addEventListener("input", e => rxMedicines[i].dose = e.target.value);
+    row.querySelector(".rx-duration").addEventListener("input", e => rxMedicines[i].duration = e.target.value);
+    row.querySelector(".rx-instructions").addEventListener("input", e => rxMedicines[i].instructions = e.target.value);
+    row.querySelector(".rx-remove").addEventListener("click", () => {
+      if (rxMedicines.length === 1) return;
+      rxMedicines.splice(i, 1);
+      renderRxMedList();
+    });
+  });
+}
+
+function generateRxFinal(){
+  const rxError = document.getElementById("rxError");
+  rxError.textContent = "";
+
+  const advice = document.getElementById("rxAdvice").value.trim();
+  const cleanMeds = rxMedicines
+    .map(m => ({ ...m, name: m.name.trim(), dose: m.dose.trim(), duration: m.duration.trim(), instructions: m.instructions.trim() }))
+    .filter(m => m.name);
+
+  if (!cleanMeds.length){
+    rxError.textContent = "Please add at least one medicine with a name.";
+    return;
+  }
+
+  const prescription = {
+    id: nextPrescriptionId++,
+    patientId: rxContext.patient.id,
+    date: rxContext.date,
+    complaint: rxContext.complaint,
+    diagnosis: rxContext.diagnosis,
+    medicines: cleanMeds,
+    advice,
+    followUp: rxContext.followUp
+  };
+  prescriptions.unshift(prescription);
+
+  // Also save this visit into consultation history so it shows in the timeline.
+  const alreadyLogged = consultations.some(c =>
+    c.patientId === rxContext.patient.id &&
+    c.date === rxContext.date &&
+    c.complaint === rxContext.complaint &&
+    c.diagnosis === rxContext.diagnosis
+  );
+  if (!alreadyLogged){
+    consultations.unshift({
+      id: nextConsultId++,
+      patientId: rxContext.patient.id,
+      date: rxContext.date,
+      complaint: rxContext.complaint,
+      symptoms: [...currentSymptoms],
+      diagnosis: rxContext.diagnosis,
+      notes: advice,
+      followUp: rxContext.followUp
+    });
+    renderKPIs();
+    renderHistory();
+  }
+
+  renderRxPreview(prescription);
+  showToast(`Prescription generated for ${rxContext.patient.name}`);
+}
+
+function renderRxPreview(rx){
+  const p = patients.find(pp => pp.id === rx.patientId) || rxContext.patient;
+  modalCard.innerHTML = `
+    <div class="modal-head">
+      <div class="modal-title">
+        <span class="modal-icon">${ICON.pill}</span>
+        Prescription Generated
+      </div>
+      <button class="modal-close" id="modalCloseBtn">${ICON.x}</button>
+    </div>
+
+    <div class="rx-slip" id="rxSlip">
+      <div style="text-align:center; margin-bottom:14px;">
+        <div style="font-weight:700; font-size:15px;">Sunshine Pediatric Clinic</div>
+        <div style="font-size:11.5px; color:var(--muted);">Dr. Ananya Sharma &middot; Pediatrician</div>
+      </div>
+      <div class="detail-row"><span class="detail-label">Patient</span><span class="detail-value">${p.name} (${p.id})</span></div>
+      <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${formatDate(rx.date)}</span></div>
+      <div class="detail-row"><span class="detail-label">Complaint</span><span class="detail-value">${rx.complaint}</span></div>
+      <div class="detail-row"><span class="detail-label">Diagnosis</span><span class="detail-value">${rx.diagnosis}</span></div>
+      <div style="margin-top:14px;">
+        <div class="detail-label" style="margin-bottom:8px;">Rx</div>
+        ${rx.medicines.map((m, i) => `
+          <div style="padding:8px 0; border-bottom:1px solid var(--border); font-size:12.5px;">
+            <strong>${i + 1}. ${m.name}</strong> &middot; ${m.dose}${m.duration ? " &middot; " + m.duration : ""}
+            ${m.instructions ? `<div style="color:var(--muted); margin-top:2px;">${m.instructions}</div>` : ""}
+          </div>
+        `).join("")}
+      </div>
+      ${rx.advice ? `<div class="detail-row" style="margin-top:8px;"><span class="detail-label">Advice</span><span class="detail-value">${rx.advice}</span></div>` : ""}
+      <div class="detail-row"><span class="detail-label">Follow Up</span><span class="detail-value">${rx.followUp ? formatDate(rx.followUp) : "—"}</span></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="printRxBtn">${ICON.printer} Print</button>
+      <button class="btn btn-primary" id="modalDoneBtn">Done</button>
+    </div>
+  `;
+  document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+  document.getElementById("modalDoneBtn").addEventListener("click", () => { closeModal(); resetConsultForm(); });
+  document.getElementById("printRxBtn").addEventListener("click", () => printRx(rx, p));
+}
+
+function printRx(rx, p){
+  const win = window.open("", "_blank", "width=480,height=640");
+  if (!win) return;
+  win.document.write(`
+    <html>
+    <head>
+      <title>Prescription - ${p.name}</title>
+      <style>
+        body{ font-family: Arial, sans-serif; padding:24px; color:#241E3D; }
+        h2{ margin-bottom:0; }
+        .muted{ color:#8B85A6; font-size:12px; }
+        .row{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #ECE8F9; font-size:13px; }
+        .med{ padding:8px 0; border-bottom:1px solid #ECE8F9; font-size:13px; }
+      </style>
+    </head>
+    <body>
+      <div style="text-align:center;">
+        <h2>Sunshine Pediatric Clinic</h2>
+        <div class="muted">Dr. Ananya Sharma &middot; Pediatrician</div>
+      </div>
+      <hr>
+      <div class="row"><span>Patient</span><strong>${p.name} (${p.id})</strong></div>
+      <div class="row"><span>Date</span><strong>${formatDate(rx.date)}</strong></div>
+      <div class="row"><span>Complaint</span><strong>${rx.complaint}</strong></div>
+      <div class="row"><span>Diagnosis</span><strong>${rx.diagnosis}</strong></div>
+      <h3 style="margin-top:16px;">Rx</h3>
+      ${rx.medicines.map((m, i) => `
+        <div class="med"><strong>${i + 1}. ${m.name}</strong> &middot; ${m.dose}${m.duration ? " &middot; " + m.duration : ""}
+        ${m.instructions ? `<div class="muted">${m.instructions}</div>` : ""}</div>
+      `).join("")}
+      ${rx.advice ? `<div class="row"><span>Advice</span><strong>${rx.advice}</strong></div>` : ""}
+      <div class="row"><span>Follow Up</span><strong>${rx.followUp ? formatDate(rx.followUp) : "—"}</strong></div>
+    </body>
+    </html>
+  `);
+  win.document.close();
+  win.focus();
+  win.print();
+}
 
 /* =========================================================
    CONSULTATION HISTORY (TIMELINE)

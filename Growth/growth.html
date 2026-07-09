@@ -39,35 +39,36 @@
       <div class="card toolbar">
         <div class="search-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input type="text" class="search-input" id="searchChild" placeholder="Search child by name or patient ID..." autocomplete="off">
+          <input type="text" class="search-input" id="searchChild" placeholder="Search a patient by name or ID, or leave blank to see all..." autocomplete="off">
           <div class="search-dropdown" id="searchDropdown"></div>
         </div>
         <div class="toolbar-actions">
+          <button class="btn btn-outline" id="viewAllBtn" style="display:none;">View All Patients</button>
           <button class="btn btn-primary" id="addGrowthBtn"></button>
         </div>
       </div>
 
-      <!-- SELECTED CHILD BANNER -->
+      <!-- SELECTED CHILD / ALL PATIENTS BANNER -->
       <div class="card child-banner" id="childBanner"></div>
 
       <!-- CURRENT DETAILS -->
       <div class="kpi-row" id="kpiRow"></div>
 
       <!-- CHARTS -->
-      <div class="card chart-card">
+      <div class="card chart-card" id="heightChartCard">
         <div class="chart-head">
           <div>
             <div class="chart-title">Height Growth</div>
-            <div class="chart-subtitle">Centimeters over time</div>
+            <div class="chart-subtitle" id="heightChartSubtitle">Centimeters over time</div>
           </div>
         </div>
-        <div class="chart-wrap">
+        <div class="chart-wrap" id="heightChartWrap">
           <svg id="heightChart" width="100%" viewBox="0 0 760 220"></svg>
           <div class="chart-tooltip" id="heightTooltip"></div>
         </div>
       </div>
 
-      <div class="bottom-row">
+      <div class="bottom-row" id="bottomChartsRow">
         <div class="card">
           <div class="chart-head">
             <div>
@@ -75,7 +76,7 @@
               <div class="chart-subtitle">Kilograms over time</div>
             </div>
           </div>
-          <div class="chart-wrap">
+          <div class="chart-wrap" id="weightChartWrap">
             <svg id="weightChart" width="100%" viewBox="0 0 360 200"></svg>
             <div class="chart-tooltip" id="weightTooltip"></div>
           </div>
@@ -88,7 +89,7 @@
               <div class="chart-subtitle">Body mass index</div>
             </div>
           </div>
-          <div class="chart-wrap">
+          <div class="chart-wrap" id="bmiChartWrap">
             <svg id="bmiChart" width="100%" viewBox="0 0 360 200"></svg>
             <div class="chart-tooltip" id="bmiTooltip"></div>
           </div>
@@ -100,13 +101,14 @@
         <div class="table-head-row">
           <div>
             <div class="table-title">Growth History</div>
-            <div class="table-subtitle">All recorded measurements</div>
+            <div class="table-subtitle" id="tableSubtitle">All recorded measurements, across every patient</div>
           </div>
         </div>
         <div class="table-scroll">
           <table>
             <thead>
               <tr>
+                <th id="patientColHead">Patient</th>
                 <th>Date</th>
                 <th>Height (cm)</th>
                 <th>Weight (kg)</th>
@@ -121,7 +123,8 @@
         </div>
         <div class="table-footer">
           <span id="resultCount"></span>
-          <span>Sorted by date</span>
+          <div class="pagination" id="pagination"></div>
+          <span id="tableSortLabel">Sorted by date</span>
         </div>
       </div>
     </div>
@@ -137,8 +140,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <input type="hidden" id="fEditIndex" value="">
     <div class="form-grid">
+      <div class="form-field full">
+        <label>Patient</label>
+        <select id="fPatient"></select>
+      </div>
       <div class="form-field full">
         <label>Date</label>
         <input type="date" id="fDate">
@@ -185,6 +191,7 @@
       </button>
     </div>
     <div class="view-grid">
+      <div class="view-field full"><span class="vf-label">Patient</span><span class="vf-value" id="vPatient">--</span></div>
       <div class="view-field"><span class="vf-label">Date</span><span class="vf-value" id="vDate">--</span></div>
       <div class="view-field"><span class="vf-label">Doctor</span><span class="vf-value" id="vDoctor">--</span></div>
       <div class="view-field"><span class="vf-label">Height</span><span class="vf-value" id="vHeight">--</span></div>
@@ -196,6 +203,26 @@
     <div class="modal-actions">
       <button class="btn btn-outline" id="closeViewGrowth2">Close</button>
       <button class="btn btn-primary" id="viewToEditGrowthBtn">Edit Record</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DELETE CONFIRM MODAL ============ -->
+<div class="modal-overlay" id="deleteConfirmOverlay">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <h3>Delete Growth Record</h3>
+      <button class="modal-close" id="closeDeleteConfirm">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="confirm-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+    </div>
+    <div class="confirm-body" id="deleteConfirmBody">Are you sure you want to delete this record? This cannot be undone.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelDeleteConfirm">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">Delete Record</button>
     </div>
   </div>
 </div>

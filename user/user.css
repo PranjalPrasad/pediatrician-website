@@ -127,7 +127,8 @@ body{
 .nav-label{ display:none; font-size:13px; font-weight:500; }
 .sidebar.expanded .nav-label{ display:inline-block; }
 
-.nav-group{ width:100%; }
+.nav-group{ width:100%; display:flex; flex-direction:column; align-items:center; }
+.sidebar.expanded .nav-group{ align-items:stretch; }
 .nav-parent{
   width:38px; height:38px;
   border-radius:12px;
