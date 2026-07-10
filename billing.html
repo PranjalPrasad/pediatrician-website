@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
     --primary:#6C63FF;
@@ -338,7 +340,7 @@
     transition:background 0.2s ease, color 0.2s ease;
   }
   .icon-btn:hover{ background:var(--hover); color:var(--primary); }
-  .icon-btn svg{ width:14px; height:14px; }
+  .icon-btn svg{ width:14px; height:14px; pointer-events:none; }
 
   /* ============ LOGOUT OVERLAY ============ */
   .logout-overlay{ position:fixed; inset:0; background:rgba(36,30,61,0.45); display:none; align-items:center; justify-content:center; z-index:1000; backdrop-filter:blur(2px); }
@@ -366,6 +368,40 @@
 
   @media (max-width: 980px){
     .billing-layout{ grid-template-columns:1fr; }
+  }
+
+  /* ============ INVOICE DOCUMENT TEMPLATE (used for view / print / PDF) ============ */
+  .inv-doc{
+    width:100%; max-width:720px; margin:0 auto; background:#fff; color:#241E3D;
+    font-family:'Inter', sans-serif; padding:6px;
+  }
+  .inv-doc-header{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding-bottom:16px; border-bottom:2px solid #ECE8F9; margin-bottom:16px; }
+  .inv-doc-clinic{ font-size:19px; font-weight:700; color:#6C63FF; }
+  .inv-doc-address{ font-size:11.5px; color:#8B85A6; margin-top:3px; }
+  .inv-doc-meta{ text-align:right; font-size:12px; color:#241E3D; line-height:1.9; }
+  .inv-doc-meta strong{ color:#8B85A6; font-weight:600; }
+  .inv-doc-patient{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px; font-size:12.5px; margin-bottom:16px; background:#F3F1FC; padding:12px 14px; border-radius:10px; }
+  .inv-doc-table{ width:100%; border-collapse:collapse; margin-bottom:16px; }
+  .inv-doc-table th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.3px; color:#8B85A6; padding:8px 10px; border-bottom:1.5px solid #ECE8F9; }
+  .inv-doc-table td{ font-size:12.5px; padding:9px 10px; border-bottom:1px solid #ECE8F9; }
+  .inv-doc-table th:last-child, .inv-doc-table td:last-child{ text-align:right; }
+  .inv-doc-totals{ margin-left:auto; width:260px; }
+  .inv-doc-totals > div{ display:flex; justify-content:space-between; font-size:12.5px; padding:6px 0; color:#4B4468; }
+  .inv-doc-grand{ border-top:2px solid #ECE8F9; margin-top:6px; padding-top:10px !important; font-size:15px !important; font-weight:700; color:#241E3D !important; }
+  .inv-doc-grand span:last-child{ color:#6C63FF; }
+  .inv-doc-footer{ margin-top:26px; padding-top:14px; border-top:1px dashed #ECE8F9; font-size:11.5px; color:#8B85A6; text-align:center; }
+
+  #printableInvoice{ position:fixed; left:-9999px; top:0; background:#fff; }
+
+  .view-modal-overlay{ position:fixed; inset:0; background:rgba(36,30,61,0.45); display:none; align-items:center; justify-content:center; z-index:1000; backdrop-filter:blur(2px); padding:20px; }
+  .view-modal-overlay.show{ display:flex; }
+  .view-modal{ background:#fff; border-radius:18px; padding:26px; width:760px; max-width:100%; max-height:88vh; overflow-y:auto; box-shadow:0 20px 50px rgba(30,41,59,0.25); animation:logoutPop 0.2s ease; }
+  .view-modal-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:18px; padding-top:16px; border-top:1px solid var(--border); }
+
+  @media print{
+    body *{ visibility:hidden; }
+    #printableInvoice, #printableInvoice *{ visibility:visible; }
+    #printableInvoice{ position:absolute; left:0; top:0; width:100%; }
   }
 </style>
 </head>
@@ -550,6 +586,19 @@
   </div>
 </div>
 
+<div class="view-modal-overlay" id="viewModalOverlay">
+  <div class="view-modal">
+    <div id="invoiceViewContent"></div>
+    <div class="view-modal-actions">
+      <button class="btn btn-outline" id="viewModalCloseBtn">Close</button>
+      <button class="btn btn-outline" id="viewModalPrintBtn"></button>
+      <button class="btn btn-success" id="viewModalDownloadBtn"></button>
+    </div>
+  </div>
+</div>
+
+<div id="printableInvoice"></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -583,9 +632,6 @@ const ICON = {
   receiptSearch: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M8 8h8M8 12h5"/></svg>`
 };
 
-/* =========================================================
-   SIDEBAR
-========================================================= */
 /* =========================================================
    SIDEBAR NAV (Current Page: billing.html)
 ========================================================= */
@@ -689,7 +735,7 @@ function closeLogoutOverlay(){ logoutOverlay.classList.remove("show"); }
 document.getElementById("logoutCancelBtn").addEventListener("click", closeLogoutOverlay);
 logoutOverlay.addEventListener("click", (e) => { if (e.target === logoutOverlay) closeLogoutOverlay(); });
 document.getElementById("logoutConfirmBtn").addEventListener("click", () => { 
-    logout(); 
+    if (typeof logout === "function") logout();
 });
 /* =========================================================
    TOAST
@@ -708,6 +754,8 @@ function showToast(msg){
 document.getElementById("generateBtn").innerHTML = `${ICON.receipt} Generate Invoice`;
 document.getElementById("printInvoiceBtn").innerHTML = `${ICON.printer} Print`;
 document.getElementById("downloadInvoiceBtn").innerHTML = `${ICON.download} Download`;
+document.getElementById("viewModalPrintBtn").innerHTML = `${ICON.printer} Print`;
+document.getElementById("viewModalDownloadBtn").innerHTML = `${ICON.download} Download`;
 
 /* =========================================================
    FORMAT HELPER
@@ -827,6 +875,8 @@ function selectPatient(id){
   document.getElementById("patientMetaDisplay").textContent = `Patient ID: ${p.id} · Age ${p.age} yrs`;
 
   invoiceGenerated = false;
+  lastGeneratedInvoiceNo = null;
+  document.getElementById("previewInvoiceNo").textContent = "—";
   document.getElementById("printInvoiceBtn").setAttribute("disabled", "true");
   document.getElementById("downloadInvoiceBtn").setAttribute("disabled", "true");
 
@@ -844,16 +894,22 @@ document.getElementById("changePatientBtn").addEventListener("click", () => {
 
 /* =========================================================
    BILLABLE ITEMS (per selected patient)
+   FIX: listeners are attached ONCE via delegation on the
+   parent list, instead of being re-attached on every
+   render. Re-attaching per row is what was silently losing
+   clicks after repeated renders (checkbox / amount / eye
+   icon "stopped working" after a few interactions).
 ========================================================= */
+const billableItemsListEl = document.getElementById("billableItemsList");
+
 function renderBillableItems(){
-  const listEl = document.getElementById("billableItemsList");
   const p = patientRecords[selectedPatientId];
   if (!p || p.items.length === 0){
-    listEl.innerHTML = `<div class="items-empty">No pending charges for this patient. Add a custom charge below if needed.</div>`;
+    billableItemsListEl.innerHTML = `<div class="items-empty">No pending charges for this patient. Add a custom charge below if needed.</div>`;
     return;
   }
 
-  listEl.innerHTML = p.items.map(item => `
+  billableItemsListEl.innerHTML = p.items.map(item => `
     <div class="item-row ${item.selected ? "" : "excluded"}" data-id="${item.id}">
       <label class="item-check">
         <input type="checkbox" ${item.selected ? "checked" : ""} data-role="toggle">
@@ -874,37 +930,48 @@ function renderBillableItems(){
       <button class="item-remove" title="Remove charge" data-role="remove">${ICON.x}</button>
     </div>
   `).join("");
-
-  listEl.querySelectorAll(".item-row").forEach(row => {
-    const itemId = row.getAttribute("data-id");
-    const item = p.items.find(i => i.id === itemId);
-
-    row.querySelector('[data-role="toggle"]').addEventListener("change", (e) => {
-      item.selected = e.target.checked;
-      row.classList.toggle("excluded", !item.selected);
-      updateAll();
-    });
-
-    row.querySelector('[data-role="amount"]').addEventListener("input", (e) => {
-      item.amount = Number(e.target.value) || 0;
-      updateAll();
-    });
-
-    const labelInput = row.querySelector('[data-role="label"]');
-    if (labelInput){
-      labelInput.addEventListener("input", (e) => {
-        item.label = e.target.value;
-        updateAll();
-      });
-    }
-
-    row.querySelector('[data-role="remove"]').addEventListener("click", () => {
-      p.items = p.items.filter(i => i.id !== itemId);
-      renderBillableItems();
-      updateAll();
-    });
-  });
 }
+
+// Delegated handlers — attached once, work for every row on every future render.
+billableItemsListEl.addEventListener("change", (e) => {
+  if (e.target.getAttribute("data-role") !== "toggle") return;
+  const p = patientRecords[selectedPatientId];
+  if (!p) return;
+  const row = e.target.closest(".item-row");
+  const item = p.items.find(i => i.id === row.getAttribute("data-id"));
+  if (!item) return;
+  item.selected = e.target.checked;
+  row.classList.toggle("excluded", !item.selected);
+  updateAll();
+});
+
+billableItemsListEl.addEventListener("input", (e) => {
+  const role = e.target.getAttribute("data-role");
+  if (role !== "amount" && role !== "label") return;
+  const p = patientRecords[selectedPatientId];
+  if (!p) return;
+  const row = e.target.closest(".item-row");
+  const item = p.items.find(i => i.id === row.getAttribute("data-id"));
+  if (!item) return;
+  if (role === "amount"){
+    item.amount = Number(e.target.value) || 0;
+  } else {
+    item.label = e.target.value;
+  }
+  updateAll();
+});
+
+billableItemsListEl.addEventListener("click", (e) => {
+  const removeBtn = e.target.closest('[data-role="remove"]');
+  if (!removeBtn) return;
+  const p = patientRecords[selectedPatientId];
+  if (!p) return;
+  const row = removeBtn.closest(".item-row");
+  const itemId = row.getAttribute("data-id");
+  p.items = p.items.filter(i => i.id !== itemId);
+  renderBillableItems();
+  updateAll();
+});
 
 document.getElementById("addCustomChargeBtn").addEventListener("click", () => {
   if (!selectedPatientId) return;
@@ -923,6 +990,11 @@ document.getElementById("addCustomChargeBtn").addEventListener("click", () => {
 
 /* =========================================================
    TOTALS + PREVIEW
+   Standard clinic invoicing formula:
+     Subtotal   = sum of all CHECKED charges
+     Taxable    = Subtotal - Discount   (discount applied first)
+     GST amount = Taxable * GST% / 100
+     Grand Total= Taxable + GST amount
 ========================================================= */
 const discountInput = document.getElementById("discount");
 const gstInput = document.getElementById("gstPercent");
@@ -932,7 +1004,7 @@ function calcInvoice(){
   const p = selectedPatientId ? patientRecords[selectedPatientId] : null;
   const selectedItems = p ? p.items.filter(i => i.selected) : [];
   const subtotal = selectedItems.reduce((sum, i) => sum + (Number(i.amount) || 0), 0);
-  const discount = Number(discountInput.value) || 0;
+  const discount = Math.min(Number(discountInput.value) || 0, subtotal);
   const gstPct = Number(gstInput.value) || 0;
   const taxable = Math.max(0, subtotal - discount);
   const gstAmount = taxable * (gstPct / 100);
@@ -975,25 +1047,173 @@ function updateAll(){
 }
 
 /* =========================================================
+   INVOICE DOCUMENT — shared template used by the on-screen
+   preview, the Print button, the PDF download and the
+   history table's view/print icons, so every surface shows
+   the exact same calculated amounts for that patient.
+========================================================= */
+function invoiceDocHTML(inv){
+  return `
+    <div class="inv-doc" id="invDoc-${inv.invoiceNo}">
+      <div class="inv-doc-header">
+        <div>
+          <div class="inv-doc-clinic">Sunshine Pediatric Clinic</div>
+          <div class="inv-doc-address">123 Rainbow Lane, Sholapur, Maharashtra</div>
+          <div class="inv-doc-address">Phone: +91 98765 43210 &middot; GSTIN: 27ABCDE1234F1Z5</div>
+        </div>
+        <div class="inv-doc-meta">
+          <div><strong>Invoice No:</strong> ${inv.invoiceNo}</div>
+          <div><strong>Date:</strong> ${inv.date}</div>
+          <div><strong>Status:</strong> ${inv.status === "paid" ? "Paid" : "Pending"}</div>
+        </div>
+      </div>
+      <div class="inv-doc-patient">
+        <div><strong>Patient:</strong> ${escapeHtml(inv.patient)}</div>
+        <div><strong>Patient ID:</strong> ${inv.patientId} &middot; Age ${inv.age} yrs</div>
+      </div>
+      <table class="inv-doc-table">
+        <thead><tr><th>#</th><th>Description</th><th>Type</th><th>Amount</th></tr></thead>
+        <tbody>
+          ${inv.items.map((it, idx) => `
+            <tr>
+              <td>${idx + 1}</td>
+              <td>${escapeHtml(it.label)}</td>
+              <td>${typeLabel[it.type] || "Custom"}</td>
+              <td>${inr(it.amount)}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+      <div class="inv-doc-totals">
+        <div><span>Subtotal</span><span>${inr(inv.subtotal)}</span></div>
+        <div><span>Discount</span><span>- ${inr(inv.discount)}</span></div>
+        <div><span>GST (${inv.gstPct}%)</span><span>${inr(inv.gstAmount)}</span></div>
+        <div class="inv-doc-totals inv-doc-grand" style="width:auto;"><span>Grand Total</span><span>${inr(inv.grandTotal)}</span></div>
+      </div>
+      <div class="inv-doc-footer">Thank you for visiting Sunshine Pediatric Clinic. Get well soon!</div>
+    </div>
+  `;
+}
+
+function findInvoice(invoiceNo){
+  return historyData.find(h => h.invoiceNo === invoiceNo) || null;
+}
+
+function printInvoiceObj(inv){
+  if (!inv) return;
+  const printArea = document.getElementById("printableInvoice");
+  printArea.innerHTML = invoiceDocHTML(inv);
+  // let the DOM paint before invoking the print dialog
+  setTimeout(() => window.print(), 50);
+}
+
+async function downloadInvoiceObj(inv){
+  if (!inv) return;
+  if (typeof html2canvas === "undefined" || typeof window.jspdf === "undefined"){
+    showToast("PDF library failed to load — check your internet connection");
+    return;
+  }
+  showToast(`Preparing ${inv.invoiceNo}.pdf…`);
+
+  const printArea = document.getElementById("printableInvoice");
+  printArea.innerHTML = invoiceDocHTML(inv);
+  printArea.style.left = "0px";
+  printArea.style.top = "-9999px";
+  printArea.style.width = "760px";
+
+  const target = document.getElementById(`invDoc-${inv.invoiceNo}`);
+
+  try{
+    const canvas = await html2canvas(target, { scale: 2, backgroundColor: "#ffffff" });
+    const imgData = canvas.toDataURL("image/png");
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth - 60;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let y = 30;
+    pdf.addImage(imgData, "PNG", 30, y, imgWidth, imgHeight);
+    heightLeft -= (pageHeight - 60);
+
+    while (heightLeft > 0){
+      pdf.addPage();
+      y = heightLeft - imgHeight + 30;
+      pdf.addImage(imgData, "PNG", 30, y, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - 60);
+    }
+
+    pdf.save(`${inv.invoiceNo}.pdf`);
+    showToast(`${inv.invoiceNo}.pdf downloaded`);
+  } catch(err){
+    console.error(err);
+    showToast("Could not generate PDF");
+  } finally {
+    printArea.style.left = "-9999px";
+    printArea.style.top = "0px";
+  }
+}
+
+/* ============ VIEW MODAL (history table "eye" icon) ============ */
+const viewModalOverlay = document.getElementById("viewModalOverlay");
+let currentViewInvoiceNo = null;
+
+function openInvoiceView(invoiceNo){
+  const inv = findInvoice(invoiceNo);
+  if (!inv) return;
+  currentViewInvoiceNo = invoiceNo;
+  document.getElementById("invoiceViewContent").innerHTML = invoiceDocHTML(inv);
+  viewModalOverlay.classList.add("show");
+}
+function closeInvoiceView(){
+  viewModalOverlay.classList.remove("show");
+  currentViewInvoiceNo = null;
+}
+document.getElementById("viewModalCloseBtn").addEventListener("click", closeInvoiceView);
+viewModalOverlay.addEventListener("click", (e) => { if (e.target === viewModalOverlay) closeInvoiceView(); });
+document.getElementById("viewModalPrintBtn").addEventListener("click", () => {
+  const inv = findInvoice(currentViewInvoiceNo);
+  printInvoiceObj(inv);
+});
+document.getElementById("viewModalDownloadBtn").addEventListener("click", () => {
+  const inv = findInvoice(currentViewInvoiceNo);
+  downloadInvoiceObj(inv);
+});
+
+/* =========================================================
    INVOICE GENERATION
 ========================================================= */
 let invoiceCounter = 1043;
 let invoiceGenerated = false;
+let lastGeneratedInvoiceNo = null;
 
 document.getElementById("generateBtn").addEventListener("click", () => {
-  const { p, selectedItems, grandTotal } = calcInvoice();
+  const { p, selectedItems, subtotal, discount, gstPct, gstAmount, grandTotal } = calcInvoice();
   if (!p || selectedItems.length === 0) return;
 
   const invoiceNo = "INV-" + invoiceCounter;
   document.getElementById("previewInvoiceNo").textContent = invoiceNo;
 
-  historyData.unshift({
+  const invoiceObj = {
     invoiceNo,
     date: "07 Jul 2026",
     patient: p.name,
-    amount: grandTotal,
+    patientId: p.id,
+    age: p.age,
+    items: selectedItems.map(i => ({ label: i.label, type: i.type, amount: Number(i.amount) || 0 })),
+    subtotal,
+    discount,
+    gstPct,
+    gstAmount,
+    amount: Math.round(grandTotal),
+    grandTotal: Math.round(grandTotal),
     status: "paid"
-  });
+  };
+
+  historyData.unshift(invoiceObj);
 
   // billed items are removed from the patient's pending list
   const billedIds = new Set(selectedItems.map(i => i.id));
@@ -1001,6 +1221,7 @@ document.getElementById("generateBtn").addEventListener("click", () => {
 
   invoiceCounter++;
   invoiceGenerated = true;
+  lastGeneratedInvoiceNo = invoiceNo;
   document.getElementById("printInvoiceBtn").removeAttribute("disabled");
   document.getElementById("downloadInvoiceBtn").removeAttribute("disabled");
 
@@ -1011,22 +1232,61 @@ document.getElementById("generateBtn").addEventListener("click", () => {
 });
 
 document.getElementById("printInvoiceBtn").addEventListener("click", () => {
-  if (invoiceGenerated) window.print();
+  if (!invoiceGenerated || !lastGeneratedInvoiceNo) return;
+  printInvoiceObj(findInvoice(lastGeneratedInvoiceNo));
 });
 
 document.getElementById("downloadInvoiceBtn").addEventListener("click", () => {
-  if (invoiceGenerated) showToast("Invoice downloaded as PDF");
+  if (!invoiceGenerated || !lastGeneratedInvoiceNo) return;
+  downloadInvoiceObj(findInvoice(lastGeneratedInvoiceNo));
 });
 
 /* =========================================================
    INVOICE HISTORY
+   FIX: row action buttons (eye / print) are handled with a
+   SINGLE delegated listener on the tbody, attached once at
+   load time — not re-attached inside renderHistory(). This
+   is what makes the eye icon reliably open the modal even
+   after the table re-renders (e.g. after generating a new
+   invoice or switching status tabs).
 ========================================================= */
+function mkHistoryInvoice(o){
+  const subtotal = o.items.reduce((s,i)=>s+i.amount,0);
+  const taxable = Math.max(0, subtotal - o.discount);
+  const gstAmount = taxable * (o.gstPct/100);
+  const grandTotal = taxable + gstAmount;
+  return {
+    invoiceNo:o.invoiceNo, date:o.date, patient:o.patient, patientId:o.patientId, age:o.age,
+    items:o.items, discount:o.discount, gstPct:o.gstPct,
+    subtotal, gstAmount, amount: Math.round(grandTotal), grandTotal: Math.round(grandTotal),
+    status:o.status
+  };
+}
+
 let historyData = [
-  { invoiceNo: "INV-1042", date: "05 Jul 2026", patient: "Ryan D'Souza",  amount: 1450, status: "paid" },
-  { invoiceNo: "INV-1041", date: "04 Jul 2026", patient: "Zara Ahmed",    amount: 980,  status: "pending" },
-  { invoiceNo: "INV-1040", date: "03 Jul 2026", patient: "Navya Reddy",   amount: 1620, status: "paid" },
-  { invoiceNo: "INV-1039", date: "02 Jul 2026", patient: "Ayaan Khan",    amount: 750,  status: "pending" },
-  { invoiceNo: "INV-1038", date: "01 Jul 2026", patient: "Diya Kapoor",   amount: 1310, status: "paid" }
+  mkHistoryInvoice({ invoiceNo:"INV-1042", date:"05 Jul 2026", patient:"Ryan D'Souza", patientId:"PED-0921", age:4, discount:0, gstPct:5, status:"paid", items:[
+    { label:"Consultation — Dr. Ananya Sharma", type:"consultation", amount:500 },
+    { label:"Hepatitis B Vaccine + Administration", type:"vaccination", amount:880 }
+  ]}),
+  mkHistoryInvoice({ invoiceNo:"INV-1041", date:"04 Jul 2026", patient:"Zara Ahmed", patientId:"PED-0887", age:6, discount:50, gstPct:5, status:"pending", items:[
+    { label:"Follow-up Consultation", type:"consultation", amount:400 },
+    { label:"Cetirizine Syrup", type:"medicine", amount:150 },
+    { label:"ORS Sachets (x5)", type:"medicine", amount:100 }
+  ]}),
+  mkHistoryInvoice({ invoiceNo:"INV-1040", date:"03 Jul 2026", patient:"Navya Reddy", patientId:"PED-0765", age:5, discount:0, gstPct:5, status:"paid", items:[
+    { label:"DTaP Booster + Administration", type:"vaccination", amount:950 },
+    { label:"Pre-vaccination Checkup", type:"consultation", amount:300 },
+    { label:"Multivitamin Syrup", type:"medicine", amount:180 }
+  ]}),
+  mkHistoryInvoice({ invoiceNo:"INV-1039", date:"02 Jul 2026", patient:"Ayaan Khan", patientId:"PED-0654", age:3, discount:0, gstPct:5, status:"pending", items:[
+    { label:"Consultation — Dr. Ananya Sharma", type:"consultation", amount:500 },
+    { label:"Paracetamol Syrup 60ml", type:"medicine", amount:150 }
+  ]}),
+  mkHistoryInvoice({ invoiceNo:"INV-1038", date:"01 Jul 2026", patient:"Diya Kapoor", patientId:"PED-0512", age:7, discount:100, gstPct:5, status:"paid", items:[
+    { label:"Consultation — Dr. Ananya Sharma", type:"consultation", amount:500 },
+    { label:"Typhoid Vaccine + Administration", type:"vaccination", amount:650 },
+    { label:"Amoxicillin Suspension", type:"medicine", amount:220 }
+  ]})
 ];
 
 let activeStatusFilter = "all";
@@ -1053,13 +1313,14 @@ function renderStatusTabs(){
   });
 }
 
+const historyBodyEl = document.getElementById("historyBody");
+
 function renderHistory(){
   const filtered = activeStatusFilter === "all"
     ? historyData
     : historyData.filter(h => h.status === activeStatusFilter);
 
-  const tbody = document.getElementById("historyBody");
-  tbody.innerHTML = filtered.map(h => `
+  historyBodyEl.innerHTML = filtered.map(h => `
     <tr>
       <td>${h.invoiceNo}</td>
       <td>${h.date}</td>
@@ -1068,22 +1329,29 @@ function renderHistory(){
       <td><span class="badge ${h.status === 'paid' ? 'badge-success' : 'badge-warning'}">${h.status === 'paid' ? 'Paid' : 'Pending'}</span></td>
       <td>
         <div class="row-actions">
-          <button class="icon-btn" title="View invoice" data-invoice="${h.invoiceNo}">${ICON.eye}</button>
-          <button class="icon-btn" title="Print invoice" data-invoice="${h.invoiceNo}">${ICON.printer}</button>
+          <button class="icon-btn" title="View invoice" data-invoice="${h.invoiceNo}" data-action="view">${ICON.eye}</button>
+          <button class="icon-btn" title="Print invoice" data-invoice="${h.invoiceNo}" data-action="print">${ICON.printer}</button>
         </div>
       </td>
     </tr>
   `).join("");
 
   document.getElementById("historySub").textContent = `${filtered.length} of ${historyData.length} invoices shown`;
-
-  tbody.querySelectorAll(".icon-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const invNo = btn.getAttribute("data-invoice");
-      showToast(`Opening ${invNo}`);
-    });
-  });
 }
+
+// Delegated listener — attached ONCE. Works for every row, forever,
+// regardless of how many times renderHistory() rebuilds the table.
+historyBodyEl.addEventListener("click", (e) => {
+  const btn = e.target.closest(".icon-btn");
+  if (!btn) return;
+  const invNo = btn.getAttribute("data-invoice");
+  const action = btn.getAttribute("data-action");
+  if (action === "view"){
+    openInvoiceView(invNo);
+  } else if (action === "print"){
+    printInvoiceObj(findInvoice(invNo));
+  }
+});
 
 /* =========================================================
    INIT
